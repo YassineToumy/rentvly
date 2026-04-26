@@ -1,0 +1,149 @@
+erDiagram
+
+    regions {
+        VARCHAR code_region PK "ex: 11, 84"
+        VARCHAR nom
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    anciennes_regions {
+        VARCHAR code_ancienne_region PK
+        VARCHAR nom
+        VARCHAR code_region FK "→ regions"
+        TIMESTAMP created_at
+    }
+
+    departments {
+        VARCHAR code_departement PK "ex: 75, 69, 2A"
+        VARCHAR nom
+        VARCHAR code_region FK "→ regions"
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    communes {
+        VARCHAR code_commune PK "code INSEE"
+        VARCHAR nom
+        VARCHAR code_departement FK "→ departments"
+        VARCHAR code_region FK "→ regions"
+        INTEGER population
+        VARCHAR code_epci
+        VARCHAR siren
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    codes_postaux {
+        BIGSERIAL id PK
+        VARCHAR code_postal
+        VARCHAR code_commune FK "→ communes"
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    users {
+        BIGSERIAL id PK
+        VARCHAR name
+        VARCHAR email "UNIQUE"
+        TIMESTAMP email_verified_at
+        VARCHAR password
+        VARCHAR remember_token
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    personal_access_tokens {
+        BIGSERIAL id PK
+        VARCHAR tokenable_type
+        BIGINT tokenable_id FK "poly → users"
+        VARCHAR name
+        VARCHAR token "UNIQUE"
+        TEXT abilities
+        TIMESTAMP last_used_at
+        TIMESTAMP expires_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    sessions {
+        VARCHAR id PK
+        BIGINT user_id FK "→ users"
+        VARCHAR ip_address
+        TEXT user_agent
+        TEXT payload
+        INTEGER last_activity
+    }
+
+    ventes {
+        BIGSERIAL id PK
+        BIGINT list_id "UNIQUE"
+        TIMESTAMP first_publication_date
+        VARCHAR status "default: active"
+        VARCHAR category_id
+        VARCHAR category_name
+        VARCHAR subject
+        TEXT body
+        VARCHAR url
+        INTEGER price
+        VARCHAR zipcode
+        VARCHAR code_commune FK "→ communes"
+        VARCHAR code_departement FK "→ departments"
+        VARCHAR code_region FK "→ regions"
+        DOUBLE lat
+        DOUBLE lng
+        VARCHAR owner_name
+        VARCHAR owner_type
+        JSONB images "array of URLs"
+        JSONB attributes "GIN indexed"
+        BOOLEAN has_phone
+        TIMESTAMP scraped_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    locations {
+        BIGSERIAL id PK
+        BIGINT list_id "UNIQUE"
+        VARCHAR status "default: active"
+        INTEGER price "loyer charges incluses"
+        INTEGER rent_excluding_charges
+        VARCHAR property_type "house, flat"
+        INTEGER surface_area
+        INTEGER rooms_quantity
+        INTEGER bedrooms_quantity
+        INTEGER bathrooms_quantity
+        BOOLEAN is_furnished
+        BOOLEAN charges_included
+        VARCHAR energy_classification "A-G"
+        VARCHAR ges_classification "A-G"
+        VARCHAR zipcode
+        VARCHAR code_commune FK "→ communes"
+        VARCHAR code_departement FK "→ departments"
+        VARCHAR code_region FK "→ regions"
+        DOUBLE lat
+        DOUBLE lng
+        VARCHAR owner_type "pro, private"
+        JSONB interior_features "elevator, fireplace, etc"
+        JSONB exterior_features "terrace, balcony, pool, etc"
+        JSONB other_features "duplex, loft, etc"
+        JSONB attributes "GIN - security_deposit, rental_fees, etc"
+        TIMESTAMP publication_date
+        TIMESTAMP scraped_at
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    regions ||--o{ anciennes_regions : "maps"
+    regions ||--o{ departments : "has"
+    regions ||--o{ communes : "has"
+    regions ||--o{ ventes : "has"
+    regions ||--o{ locations : "has"
+    departments ||--o{ communes : "has"
+    departments ||--o{ ventes : "has"
+    departments ||--o{ locations : "has"
+    communes ||--o{ codes_postaux : "has"
+    communes ||--o{ ventes : "has"
+    communes ||--o{ locations : "has"
+    users ||--o{ personal_access_tokens : "owns"
+    users ||--o{ sessions : "has"

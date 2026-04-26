@@ -1,0 +1,31 @@
+# Environment and secrets
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Python cache / virtual env
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node / build artifacts
+**/node_modules/
+**/.nuxt/
+**/.output/
+
+# Model artifacts and training outputs
+*.cbm
+*.pkl
+*.joblib
+model_metadata.json
+catboost_info/
+
+# Notebooks and local datasets/stats
+*.ipynb
+.extra/
+
+# OS / editor
+.DS_Store
+Thumbs.db

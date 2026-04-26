@@ -1,0 +1,9 @@
+.git
+.idea
+.vscode
+node_modules
+.nuxt
+.output
+npm-debug.log
+yarn-error.log
+.env
