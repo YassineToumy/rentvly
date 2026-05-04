@@ -29,3 +29,6 @@ catboost_info/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Accidental nested clone paths (do not commit)
+github.com/

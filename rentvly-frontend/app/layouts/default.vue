@@ -35,13 +35,12 @@ const userInitial = computed(() => {
     <header class="bg-gray-950/80 backdrop-blur-xl border-b border-gray-800/60 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <div class="flex items-center gap-8">
-          <NuxtLink to="/" class="flex items-center gap-2.5 group">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow">
-              <UIcon name="i-lucide-building-2" class="size-4 text-white" />
-            </div>
-            <span class="text-lg font-bold text-white tracking-tight">
-              Rent<span class="text-primary-400">vly</span>
-            </span>
+          <NuxtLink to="/" class="flex items-center">
+            <img
+              src="/logo.png"
+              alt="Rentvly"
+              class="h-10 w-auto object-contain"
+            >
           </NuxtLink>
 
           <nav class="hidden md:flex items-center gap-1">
@@ -131,11 +130,12 @@ const userInitial = computed(() => {
     <footer class="border-t border-gray-800/60 mt-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 rounded-md bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-              <UIcon name="i-lucide-building-2" class="size-3.5 text-white" />
-            </div>
-            <span class="text-sm font-semibold text-gray-400">Rentvly</span>
+          <div class="flex items-center">
+            <img
+              src="/logo.png"
+              alt="Rentvly"
+              class="h-8 w-auto object-contain"
+            >
           </div>
           <div class="flex items-center gap-6 text-xs text-gray-500">
             <NuxtLink to="/" class="hover:text-gray-300 transition-colors">Accueil</NuxtLink>

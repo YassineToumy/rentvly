@@ -5,7 +5,7 @@
       <div class="max-w-3xl mx-auto text-center">
         <h1 class="text-5xl font-extrabold text-black dark:text-white leading-tight">
           Analysez la rentabilité de
-          <span class="underline decoration-2 underline-offset-4">n'importe quel bien</span>
+          n'importe quel bien
           en quelques secondes
         </h1>
         <p class="mt-6 text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
@@ -83,7 +83,7 @@
           <div class="p-6 border border-gray-200 dark:border-gray-800 rounded-xl">
             <UIcon name="i-lucide-euro" class="size-6 text-black dark:text-white mb-3" />
             <h3 class="font-semibold text-black dark:text-white mb-1">Loyer estimé par IA</h3>
-            <p class="text-sm text-gray-500">Prédiction du loyer mensuel basée sur 50 000+ annonces et un modèle CatBoost.</p>
+            <p class="text-sm text-gray-500">Prédiction du loyer mensuel basée sur 50 000+ annonces et un modèle robuste</p>
           </div>
           <div class="p-6 border border-gray-200 dark:border-gray-800 rounded-xl">
             <UIcon name="i-lucide-percent" class="size-6 text-black dark:text-white mb-3" />
