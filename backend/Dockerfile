@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # PHP extensions for this Laravel app.
-RUN install-php-extensions pdo_pgsql mongodb gd zip exif ftp opcache
+RUN install-php-extensions pdo_pgsql mongodb gd zip exif ftp opcache @composer
 
 # PHP upload and memory limits.
 RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/uploads.ini \
@@ -17,22 +17,15 @@ RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/uploads.ini \
 
 WORKDIR /app
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 COPY composer.json composer.lock ./
 
-# Pre-install dependencies to ensure they work before copying full app
-RUN --mount=type=cache,target=/root/.composer composer install \
-    --no-dev \
-    --no-interaction \
-    --no-scripts \
-    --optimize-autoloader 2>&1 || { echo "First composer install failed, retrying..."; sleep 5; composer install --no-dev --no-interaction --no-scripts --optimize-autoloader; }
+# Install dependencies with retry
+RUN composer install --no-dev --no-interaction --optimize-autoloader || \
+    (sleep 5 && composer install --no-dev --no-interaction --optimize-autoloader)
 
 COPY . .
-
-ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN --mount=type=cache,target=/root/.composer composer install \
-    --no-dev \
-    --no-interaction \
-    --optimize-autoloader 2>&1
 
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache \
     && chmod -R 755 /app/storage /app/bootstrap/cache
