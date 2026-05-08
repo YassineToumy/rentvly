@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:latest-php8.4
+FROM dunglas/frankenphp:1.12.2-php8.4
 
 # Install git to allow Composer source fallback.
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
