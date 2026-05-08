@@ -1,10 +1,14 @@
 FROM dunglas/frankenphp:1.12.2-php8.4
 
-# Install git to allow Composer source fallback.
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+# Install git and build dependencies to allow Composer source fallback.
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    autoconf \
+    && rm -rf /var/lib/apt/lists/*
 
 # PHP extensions for this Laravel app.
-RUN install-php-extensions pdo_pgsql mongodb gd zip exif ftp opcache @composer
+RUN install-php-extensions pdo_pgsql mongodb gd zip exif ftp opcache
 
 # PHP upload and memory limits.
 RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/uploads.ini \
@@ -13,11 +17,22 @@ RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/uploads.ini \
 
 WORKDIR /app
 
+COPY composer.json composer.lock ./
+
+# Pre-install dependencies to ensure they work before copying full app
+RUN --mount=type=cache,target=/root/.composer composer install \
+    --no-dev \
+    --no-interaction \
+    --no-scripts \
+    --optimize-autoloader 2>&1 || { echo "First composer install failed, retrying..."; sleep 5; composer install --no-dev --no-interaction --no-scripts --optimize-autoloader; }
+
 COPY . .
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-dev --optimize-autoloader --no-interaction || \
-    (sleep 5 && composer install --no-dev --optimize-autoloader --no-interaction)
+RUN --mount=type=cache,target=/root/.composer composer install \
+    --no-dev \
+    --no-interaction \
+    --optimize-autoloader 2>&1
 
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache \
     && chmod -R 755 /app/storage /app/bootstrap/cache
