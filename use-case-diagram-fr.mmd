@@ -1,0 +1,60 @@
+graph LR
+    Visiteur["Visiteur"]
+    Utilisateur["Utilisateur authentifié"]
+    Admin["Administrateur"]
+
+    subgraph Public["Fonctionnalités publiques"]
+        Accueil(["Consulter l'accueil"])
+        Annonces(["Consulter les annonces"])
+        Recherche(["Rechercher / filtrer les annonces"])
+        Details(["Voir le détail d'une annonce"])
+        EstimerLoyer(["Estimer le loyer"])
+    end
+
+    subgraph Auth["Fonctionnalités réservées"]
+        Inscription(["S'enregistrer"])
+        Connexion(["Se connecter"])
+        Deconnexion(["Se déconnecter"])
+        TableauBord(["Accéder au tableau de bord"])
+        Historique(["Consulter l'historique des estimations"])
+        Rentabilite(["Calculer la rentabilité"])
+        VoirAnnoncesVente(["Voir les annonces en vente"])
+        EstimerPrixLocation(["Estimer les prix en location"])
+    end
+
+    subgraph Administration["Administration"]
+        GererComptes(["Gérer les comptes"])
+        GererPrivileges(["Gérer les privilèges"])
+    end
+
+    Visiteur --> Accueil
+    Visiteur --> Annonces
+    Visiteur --> Recherche
+    Visiteur --> Details
+    Visiteur --> EstimerLoyer
+
+    Utilisateur --> Inscription
+    Utilisateur --> Connexion
+    Utilisateur --> Deconnexion
+    Utilisateur --> TableauBord
+    Utilisateur --> Historique
+    Utilisateur --> Rentabilite
+    Utilisateur --> VoirAnnoncesVente
+    Utilisateur --> EstimerPrixLocation
+
+    VoirAnnoncesVente --> EstimerPrixLocation
+    EstimerPrixLocation --> Rentabilite
+
+    Utilisateur --> EstimerLoyer
+    Utilisateur --> Details
+
+    Note["Note: Pour les annonces externes, estimation directe possible. Pour les annonces internes: Voir annonce → Estimer prix → Calcul rentabilité"]
+
+    Admin --> GererComptes
+    Admin --> GererPrivileges
+
+    class Visiteur,Utilisateur,Admin acteur
+    class Accueil,Annonces,Recherche,Details,EstimerLoyer,Inscription,Connexion,Deconnexion,TableauBord,Historique,Rentabilite,VoirAnnoncesVente,EstimerPrixLocation,GererComptes,GererPrivileges casdutilisation
+
+    classDef acteur fill:#f8f8ff,stroke:#333,stroke-width:1px,color:#111;
+    classDef casdutilisation fill:#fff7db,stroke:#666,stroke-width:1px,color:#111;

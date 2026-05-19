@@ -1,0 +1,50 @@
+```mermaid
+graph TB
+    Visitor["Visiteur"]
+    User["Utilisateur authentifié"]
+    Service["Service de prédiction"]
+
+    subgraph Public["Fonctionnalités publiques"]
+        ViewHomepage(["Consulter l'accueil"])
+        BrowseListings(["Consulter les annonces"])
+        SearchFilter(["Rechercher / filtrer les annonces"])
+        ViewListingDetails(["Voir le détail d'une annonce"])
+        EstimateRent(["Estimer le loyer"])
+    end
+
+    subgraph Auth["Fonctionnalités réservées"]
+        Register(["S'enregistrer"])
+        Login(["Se connecter"])
+        Logout(["Se déconnecter"])
+        ViewDashboard(["Accéder au tableau de bord"])
+        ReviewEstimations(["Consulter l'historique des estimations"])
+        CalculateRentability(["Calculer la rentabilité"])
+    end
+
+    Visitor <|-- User
+
+    Visitor --> ViewHomepage
+    Visitor --> BrowseListings
+    Visitor --> SearchFilter
+    Visitor --> ViewListingDetails
+    Visitor --> EstimateRent
+
+    User --> Register
+    User --> Login
+    User --> Logout
+    User --> ViewDashboard
+    User --> ReviewEstimations
+    User --> CalculateRentability
+
+    User --> EstimateRent
+    User --> ViewListingDetails
+
+    EstimateRent -.-> Service
+    CalculateRentability -.-> Service
+
+    class Visitor,User,Service actor
+    class ViewHomepage,BrowseListings,SearchFilter,ViewListingDetails,EstimateRent,Register,Login,Logout,ViewDashboard,ReviewEstimations,CalculateRentability usecase
+
+    classDef actor fill:#f8f8ff,stroke:#333,stroke-width:1px,color:#111;
+    classDef usecase fill:#fff7db,stroke:#666,stroke-width:1px,color:#111;
+```

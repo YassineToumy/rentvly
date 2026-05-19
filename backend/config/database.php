@@ -21,13 +21,6 @@ return [
             'sslmode'        => 'prefer',
         ],
 
-        // ── MongoDB (annonces / locations_clean) ──
-        'leboncoin' => [
-            'driver'   => 'mongodb',
-            'dsn'      => env('MONGO_URI', 'mongodb://root:root@72.60.215.111:27019'),
-            'database' => env('MONGO_DATABASE', 'leboncoin'),
-        ],
-
     ],
 
     'migrations' => [

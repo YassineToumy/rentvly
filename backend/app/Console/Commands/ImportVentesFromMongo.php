@@ -9,16 +9,21 @@ use MongoDB\Client as MongoClient;
 class ImportVentesFromMongo extends Command
 {
     protected $signature = 'import:ventes {--chunk=500 : Batch insert size}';
-    protected $description = 'Import ventes from MongoDB (bienici.ventes_clean) to PostgreSQL';
+    protected $description = 'Import ventes from MongoDB into PostgreSQL (db/collection from env)';
 
     public function handle(): int
     {
         $chunk = (int) $this->option('chunk');
 
+        $mongoDb = env('MONGO_IMPORT_DATABASE', 'bienici');
+        $mongoCollection = env('MONGO_IMPORT_VENTES_COLLECTION', 'ventes_clean');
+
         $this->info('Connecting to MongoDB...');
 
         $mongo = new MongoClient(env('MONGO_IMPORT_DSN'));
-        $collection = $mongo->bienici->ventes_clean;
+        $collection = $mongo->selectDatabase($mongoDb)->selectCollection($mongoCollection);
+
+        $this->info("Source: {$mongoDb}.{$mongoCollection}");
 
         $total = $collection->countDocuments();
         $this->info("Found {$total} documents to import.");

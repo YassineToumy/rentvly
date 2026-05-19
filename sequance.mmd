@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant API
+    participant Database
+    participant PaymentService
+
+    User->>Frontend: Login request
+    Frontend->>API: Authenticate user
+    API->>Database: Verify credentials
+    Database-->>API: User data
+    API-->>Frontend: Authentication token
+    Frontend-->>User: Login success
+
+    User->>Frontend: Search rentals
+    Frontend->>API: Query rentals
+    API->>Database: Fetch rental listings
+    Database-->>API: Rental data
+    API-->>Frontend: Display listings
+    Frontend-->>User: Show results
+
+    User->>Frontend: Book rental
+    Frontend->>API: Create booking
+    API->>Database: Check availability
+    Database-->>API: Availability status
+    API->>PaymentService: Process payment
+    PaymentService-->>API: Payment confirmation
+    API->>Database: Update booking
+    Database-->>API: Booking saved
+    API-->>Frontend: Booking success
+    Frontend-->>User: Confirmation

@@ -1,34 +1,45 @@
+# Production API image (FrankenPHP + Laravel).
+# MongoDB is not compiled here: the HTTP API uses PostgreSQL only.
+# Run `php artisan import:ventes` from local/Herd or a worker with ext-mongodb.
+
 FROM dunglas/frankenphp:1.12.2-php8.4
 
-# Install git and build dependencies to allow Composer source fallback.
 RUN apt-get update && apt-get install -y \
     git \
-    build-essential \
-    autoconf \
+    unzip \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# PHP extensions for this Laravel app.
-RUN install-php-extensions pdo_pgsql mongodb gd zip exif ftp opcache @composer
+# Extensions required at runtime by the API (no ext-mongodb — avoids long/failed PECL builds on Dokploy).
+RUN install-php-extensions pdo_pgsql gd zip exif ftp opcache @composer
 
-# PHP upload and memory limits.
 RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 150M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "memory_limit = 3G" >> /usr/local/etc/php/conf.d/uploads.ini
+    && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 WORKDIR /app
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV APP_KEY=base64:dGVtcG9yYXJ5a2V5Zm9yZG9ja2VyYnVpbGQxMjM0NTY3ODkw
 
 COPY composer.json composer.lock ./
 
-# Install dependencies with retry
-RUN composer install --no-dev --no-interaction --optimize-autoloader || \
-    (sleep 5 && composer install --no-dev --no-interaction --optimize-autoloader)
+# --no-scripts: artisan is not present yet. --ignore-platform-req: ext-mongodb only needed for import CLI.
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts \
+    --ignore-platform-req=ext-mongodb
 
 COPY . .
 
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache \
-    && chmod -R 755 /app/storage /app/bootstrap/cache
+RUN composer dump-autoload --optimize --no-dev \
+    && php artisan package:discover --ansi
+
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 755 storage bootstrap/cache
 
 COPY Caddyfile /etc/caddy/Caddyfile
 

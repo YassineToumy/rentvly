@@ -1,0 +1,29 @@
+# Optional image for `php artisan import:ventes` (includes ext-mongodb).
+# Build: docker build -f Dockerfile.import -t rentvly-import .
+# Run:   docker run --rm --env-file .env rentvly-import php artisan import:ventes
+
+FROM php:8.4-cli-bookworm
+
+RUN apt-get update && apt-get install -y \
+    git unzip libpq-dev pkg-config \
+    libssl-dev libsasl2-dev libcurl4-openssl-dev \
+    libsnappy-dev libzstd-dev libmongoc-dev libbson-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
+ENV MAKEFLAGS=-j1
+RUN install-php-extensions pdo_pgsql mongodb @composer
+
+WORKDIR /app
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV APP_KEY=base64:dGVtcG9yYXJ5a2V5Zm9yZG9ja2VyYnVpbGQxMjM0NTY3ODkw
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
+
+COPY . .
+RUN composer dump-autoload --optimize --no-dev
+
+CMD ["php", "artisan", "import:ventes"]
