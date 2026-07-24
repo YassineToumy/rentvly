@@ -46,16 +46,15 @@ class PredictionController extends Controller
                 ], 422);
             }
 
-            $errorBody = $response->json();
-            return response()->json([
-                'success' => false,
-                'error' => $errorBody['error'] ?? 'Prediction service error',
-            ], $response->status());
+            return response()->json(
+                $this->predictionServiceError($response->json(), $response->status()),
+                $response->status()
+            );
 
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Cannot reach prediction service. Is Flask running?',
+                'error' => 'Cannot reach prediction service. Start api-python: python main.py (port 8000).',
             ], 503);
         } catch (\Exception $e) {
             return response()->json([
@@ -95,16 +94,15 @@ class PredictionController extends Controller
                 ], 422);
             }
 
-            $errorBody = $response->json();
-            return response()->json([
-                'success' => false,
-                'error' => $errorBody['error'] ?? 'Prediction service error',
-            ], $response->status());
+            return response()->json(
+                $this->predictionServiceError($response->json(), $response->status()),
+                $response->status()
+            );
 
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Cannot reach prediction service. Is Flask running?',
+                'error' => 'Cannot reach prediction service. Start api-python: python main.py (port 8000).',
             ], 503);
         } catch (\Exception $e) {
             return response()->json([
@@ -112,6 +110,24 @@ class PredictionController extends Controller
                 'error' => 'Rentability failed: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function predictionServiceError(?array $body, int $status): array
+    {
+        $body ??= [];
+        $error = $body['error'] ?? 'Prediction service error';
+
+        if (($body['error'] ?? '') === 'Model is not loaded') {
+            $error = 'Model is not loaded. Copy model.cbm and model_metadata.json into api-python/, then restart python main.py.';
+        }
+
+        return array_filter([
+            'success' => false,
+            'error' => $error,
+            'details' => $body['details'] ?? null,
+            'expected_model_path' => $body['expected_model_path'] ?? null,
+            'expected_metadata_path' => $body['expected_metadata_path'] ?? null,
+        ], fn ($v) => $v !== null);
     }
 
     /**

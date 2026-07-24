@@ -21,11 +21,38 @@ const {
   resetForm,
 } = usePrediction()
 
+const { isAuthenticated } = useAuth()
+const { saveEstimation, fetchByListing, saving: savingEstimation, error: saveError } = useEstimations()
+const toast = useToast()
+
 const purchasePrice = ref<number | null>(null)
+const listingEstimation = ref<{ id: number; latest_purchase_price: number | null } | null>(null)
+
+const listingId = computed(() => {
+  const id = route.params.id
+  return String(Array.isArray(id) ? id[0] : id)
+})
+
+const hasDashboardEstimation = computed(() => listingEstimation.value != null)
+
+const priceChanged = computed(() => {
+  if (!listingEstimation.value || !purchasePrice.value || purchasePrice.value <= 0) return false
+  const last = listingEstimation.value.latest_purchase_price
+  if (!last || last <= 0) return false
+  return Math.abs(purchasePrice.value - last) > 0.01
+})
+
+const saveButtonLabel = computed(() => {
+  if (!isAuthenticated.value) return 'Se connecter pour enregistrer'
+  if (!hasDashboardEstimation.value) return "Enregistrer dans mon tableau de bord"
+  if (priceChanged.value) return 'Enregistrer le nouveau prix (sous-estimation)'
+  return 'Voir dans mon tableau de bord'
+})
 
 async function fetchProperty() {
   loading.value = true
   error.value = null
+  property.value = null
   try {
     const id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
     const res = await $fetch<any>(`${apiBase}/ventes/${id}`)
@@ -93,10 +120,68 @@ async function handleEstimate() {
 
 async function handleRentability() {
   if (!purchasePrice.value || purchasePrice.value <= 0) return
+  if (property.value) mapPropertyToForm(property.value)
   await calculateRentability(purchasePrice.value)
 }
 
-onMounted(fetchProperty)
+async function loadListingEstimation() {
+  if (!isAuthenticated.value) {
+    listingEstimation.value = null
+    return
+  }
+  listingEstimation.value = await fetchByListing(listingId.value)
+}
+
+async function handleSaveEstimation() {
+  if (!predictionResult.value || !property.value) return
+
+  if (!isAuthenticated.value) {
+    await navigateTo('/login')
+    return
+  }
+
+  if (hasDashboardEstimation.value && !priceChanged.value) {
+    await navigateTo(`/dashboard/estimations/${listingEstimation.value!.id}`)
+    return
+  }
+
+  mapPropertyToForm(property.value)
+
+  const result = await saveEstimation({
+    form: { ...form },
+    prediction: predictionResult.value,
+    rentability: rentabilityResult.value,
+    purchase_price: purchasePrice.value,
+    listing_id: listingId.value,
+  })
+
+  if (result) {
+    listingEstimation.value = {
+      id: result.data.id,
+      latest_purchase_price: result.data.latest_purchase_price ?? result.data.purchase_price,
+    }
+    toast.add({
+      title: result.message || 'Estimation enregistrée',
+      color: result.save_action === 'already_exists' ? 'info' : 'success',
+    })
+    await navigateTo(`/dashboard/estimations/${result.data.id}`)
+  }
+}
+
+async function loadPage() {
+  activeImage.value = 0
+  resetForm()
+  await fetchProperty()
+  await loadListingEstimation()
+}
+
+watch(() => route.params.id, () => {
+  if (route.params.id) loadPage()
+})
+
+onMounted(loadPage)
+
+watch(isAuthenticated, loadListingEstimation)
 
 function formatPrice(v: number | null): string {
   if (!v) return '—'
@@ -156,14 +241,14 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
   <div class="min-h-screen">
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-32">
-      <UIcon name="i-lucide-loader-2" class="size-8 text-gray-400 animate-spin" />
+      <UIcon name="i-lucide-loader-2" class="size-8 text-gray-600 dark:text-gray-400 animate-spin" />
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="max-w-3xl mx-auto px-4 py-20 text-center">
       <UIcon name="i-lucide-alert-circle" class="size-12 text-red-400 mx-auto mb-4" />
-      <h2 class="text-xl font-semibold text-white mb-2">Erreur</h2>
-      <p class="text-gray-400 mb-6">{{ error }}</p>
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Erreur</h2>
+      <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
       <UButton to="/listings" variant="outline" color="neutral" icon="i-lucide-arrow-left">Retour aux annonces</UButton>
     </div>
 
@@ -220,8 +305,8 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
             <div>
               <h1 class="text-2xl font-bold text-black dark:text-white">{{ property.title }}</h1>
               <div class="flex items-center gap-2 mt-2">
-                <UIcon name="i-lucide-map-pin" class="size-4 text-gray-400" />
-                <span class="text-sm text-gray-500">
+                <UIcon name="i-lucide-map-pin" class="size-4 text-gray-600 dark:text-gray-400" />
+                <span class="text-sm text-gray-600 dark:text-gray-500">
                   {{ property.city }}
                   <template v-if="property.postal_code"> · {{ property.postal_code }}</template>
                   <template v-if="property.department_name"> · {{ property.department_name }}</template>
@@ -233,23 +318,23 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
             <!-- Key specs -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-center">
-                <UIcon name="i-lucide-home" class="size-5 text-gray-400 mx-auto mb-1" />
-                <p class="text-xs text-gray-500">Type</p>
+                <UIcon name="i-lucide-home" class="size-5 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
+                <p class="text-xs text-gray-600 dark:text-gray-500">Type</p>
                 <p class="text-sm font-semibold text-black dark:text-white">{{ typeLabel(property.property_type) }}</p>
               </div>
               <div v-if="property.surface_area" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-center">
-                <UIcon name="i-lucide-ruler" class="size-5 text-gray-400 mx-auto mb-1" />
-                <p class="text-xs text-gray-500">Surface</p>
+                <UIcon name="i-lucide-ruler" class="size-5 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
+                <p class="text-xs text-gray-600 dark:text-gray-500">Surface</p>
                 <p class="text-sm font-semibold text-black dark:text-white">{{ property.surface_area }} m²</p>
               </div>
               <div v-if="property.rooms_quantity" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-center">
-                <UIcon name="i-lucide-layout-grid" class="size-5 text-gray-400 mx-auto mb-1" />
-                <p class="text-xs text-gray-500">Pièces</p>
+                <UIcon name="i-lucide-layout-grid" class="size-5 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
+                <p class="text-xs text-gray-600 dark:text-gray-500">Pièces</p>
                 <p class="text-sm font-semibold text-black dark:text-white">{{ property.rooms_quantity }}</p>
               </div>
               <div v-if="property.equipment_score" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-center">
-                <UIcon name="i-lucide-star" class="size-5 text-gray-400 mx-auto mb-1" />
-                <p class="text-xs text-gray-500">Équipement</p>
+                <UIcon name="i-lucide-star" class="size-5 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
+                <p class="text-xs text-gray-600 dark:text-gray-500">Équipement</p>
                 <p class="text-sm font-semibold text-black dark:text-white">{{ property.equipment_score }}/10</p>
               </div>
             </div>
@@ -267,35 +352,35 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
               <h2 class="text-lg font-semibold text-black dark:text-white mb-4">Détails</h2>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 text-sm">
                 <div class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Type de bien</span>
+                  <span class="text-gray-600 dark:text-gray-500">Type de bien</span>
                   <span class="font-medium text-black dark:text-white">{{ typeLabel(property.property_type) }}</span>
                 </div>
                 <div v-if="property.surface_area" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Surface</span>
+                  <span class="text-gray-600 dark:text-gray-500">Surface</span>
                   <span class="font-medium text-black dark:text-white">{{ property.surface_area }} m²</span>
                 </div>
                 <div v-if="property.rooms_quantity" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Pièces</span>
+                  <span class="text-gray-600 dark:text-gray-500">Pièces</span>
                   <span class="font-medium text-black dark:text-white">{{ property.rooms_quantity }}</span>
                 </div>
                 <div v-if="property.surface_per_room" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Surface / pièce</span>
+                  <span class="text-gray-600 dark:text-gray-500">Surface / pièce</span>
                   <span class="font-medium text-black dark:text-white">{{ property.surface_per_room }} m²</span>
                 </div>
                 <div v-if="property.price_per_sqm" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Prix au m²</span>
+                  <span class="text-gray-600 dark:text-gray-500">Prix au m²</span>
                   <span class="font-medium text-black dark:text-white">{{ formatPrice(property.price_per_sqm) }}</span>
                 </div>
                 <div v-if="property.is_new_property" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">État</span>
+                  <span class="text-gray-600 dark:text-gray-500">État</span>
                   <span class="font-medium text-black dark:text-white">Neuf</span>
                 </div>
                 <div v-if="property.delivery_date" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Livraison prévue</span>
+                  <span class="text-gray-600 dark:text-gray-500">Livraison prévue</span>
                   <span class="font-medium text-black dark:text-white">{{ new Date(property.delivery_date).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) }}</span>
                 </div>
                 <div v-if="property.price_has_decreased" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Prix</span>
+                  <span class="text-gray-600 dark:text-gray-500">Prix</span>
                   <span class="font-medium text-green-500">Prix en baisse</span>
                 </div>
               </div>
@@ -321,27 +406,27 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
               <h2 class="text-lg font-semibold text-black dark:text-white mb-4">Localisation</h2>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 text-sm">
                 <div class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Ville</span>
+                  <span class="text-gray-600 dark:text-gray-500">Ville</span>
                   <span class="font-medium text-black dark:text-white">{{ property.city }}</span>
                 </div>
                 <div class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Code postal</span>
+                  <span class="text-gray-600 dark:text-gray-500">Code postal</span>
                   <span class="font-medium text-black dark:text-white">{{ property.postal_code }}</span>
                 </div>
                 <div v-if="property.department_name" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Département</span>
+                  <span class="text-gray-600 dark:text-gray-500">Département</span>
                   <span class="font-medium text-black dark:text-white">{{ property.department_name }} ({{ property.department_code }})</span>
                 </div>
                 <div v-if="property.region_name" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Région</span>
+                  <span class="text-gray-600 dark:text-gray-500">Région</span>
                   <span class="font-medium text-black dark:text-white">{{ property.region_name }}</span>
                 </div>
                 <div v-if="property.commune_name" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Commune</span>
+                  <span class="text-gray-600 dark:text-gray-500">Commune</span>
                   <span class="font-medium text-black dark:text-white">{{ property.commune_name }}</span>
                 </div>
                 <div v-if="property.district_name" class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-800">
-                  <span class="text-gray-500">Quartier</span>
+                  <span class="text-gray-600 dark:text-gray-500">Quartier</span>
                   <span class="font-medium text-black dark:text-white">{{ property.district_name }}</span>
                 </div>
               </div>
@@ -355,17 +440,17 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
               <!-- Price -->
               <div class="text-center">
                 <p class="text-3xl font-bold text-black dark:text-white">{{ formatPrice(property.price) }}</p>
-                <p v-if="property.price_per_sqm" class="text-sm text-gray-400 mt-1">{{ Math.round(property.price_per_sqm) }} €/m²</p>
+                <p v-if="property.price_per_sqm" class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ Math.round(property.price_per_sqm) }} €/m²</p>
               </div>
 
               <!-- Owner -->
               <div v-if="property.owner_name" class="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                  <UIcon :name="property.is_pro ? 'i-lucide-building-2' : 'i-lucide-user'" class="size-5 text-gray-500" />
+                  <UIcon :name="property.is_pro ? 'i-lucide-building-2' : 'i-lucide-user'" class="size-5 text-gray-600 dark:text-gray-500" />
                 </div>
                 <div class="min-w-0">
                   <p class="text-sm font-medium text-black dark:text-white truncate">{{ property.owner_name }}</p>
-                  <p class="text-xs text-gray-400">{{ property.is_pro ? 'Professionnel' : 'Particulier' }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ property.is_pro ? 'Professionnel' : 'Particulier' }}</p>
                 </div>
               </div>
 
@@ -402,34 +487,64 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
                 <!-- Loading -->
                 <div v-else-if="predLoading" class="text-center py-4">
                   <UIcon name="i-lucide-loader-2" class="size-6 animate-spin text-primary-500 mx-auto" />
-                  <p class="text-sm text-gray-400 mt-2">Estimation en cours...</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Estimation en cours...</p>
                 </div>
 
                 <!-- Result -->
                 <div v-else-if="predictionResult" class="space-y-3">
                   <div class="rounded-lg bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800 p-4 text-center">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Loyer mensuel estimé</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-500 dark:text-gray-400 mb-1">Loyer mensuel estimé</p>
                     <p class="text-3xl font-bold text-primary-600 dark:text-primary-400">
                       {{ formatCurrency(predictionResult.predicted_rent) }}
                     </p>
-                    <p class="text-xs text-gray-400 mt-1">
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                       {{ formatCurrency(predictionResult.confidence_range.low) }} – {{ formatCurrency(predictionResult.confidence_range.high) }}
                     </p>
-                    <p class="text-xs text-gray-400">Marge d'erreur : ±{{ predictionResult.confidence_range.mape_pct }}%</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">Marge d'erreur : ±{{ predictionResult.confidence_range.mape_pct }}%</p>
                   </div>
 
                   <div class="grid grid-cols-2 gap-2 text-xs text-center">
                     <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-2">
-                      <p class="text-gray-400">Loyer annuel</p>
+                      <p class="text-gray-600 dark:text-gray-400">Loyer annuel</p>
                       <p class="font-semibold text-black dark:text-white">{{ formatCurrency(predictionResult.predicted_rent * 12) }}</p>
                     </div>
                     <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-2">
-                      <p class="text-gray-400">Prix au m²/mois</p>
+                      <p class="text-gray-600 dark:text-gray-400">Prix au m²/mois</p>
                       <p class="font-semibold text-black dark:text-white">
                         {{ property.surface_area ? formatCurrency(predictionResult.predicted_rent / property.surface_area) : '—' }}/m²
                       </p>
                     </div>
                   </div>
+
+                  <UAlert
+                    v-if="saveError"
+                    color="error"
+                    icon="i-lucide-alert-circle"
+                    :description="saveError"
+                    class="mb-1"
+                  />
+
+                  <UAlert
+                    v-if="hasDashboardEstimation && !priceChanged"
+                    color="info"
+                    variant="soft"
+                    icon="i-lucide-layout-dashboard"
+                    title="Déjà dans votre tableau de bord"
+                    description="Ce bien a une estimation principale. Changez le prix d'achat pour ajouter une sous-estimation."
+                    class="mb-2"
+                  />
+
+                  <UButton
+                    block
+                    :color="hasDashboardEstimation && !priceChanged ? 'neutral' : 'primary'"
+                    :variant="hasDashboardEstimation && !priceChanged ? 'soft' : 'solid'"
+                    size="sm"
+                    :icon="hasDashboardEstimation && !priceChanged ? 'i-lucide-external-link' : 'i-lucide-bookmark'"
+                    :loading="savingEstimation"
+                    @click="handleSaveEstimation"
+                  >
+                    {{ saveButtonLabel }}
+                  </UButton>
 
                   <UButton
                     block
@@ -481,13 +596,13 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
                   <div v-if="rentabilityResult" class="space-y-3 pt-1">
                     <div class="grid grid-cols-2 gap-2">
                       <div class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                        <p class="text-xs text-gray-500 mb-1">Rendement brut</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-500 mb-1">Rendement brut</p>
                         <p class="text-lg font-bold" :class="getYieldColor(rentabilityResult.gross_yield)">
                           {{ rentabilityResult.gross_yield }}%
                         </p>
                       </div>
                       <div class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                        <p class="text-xs text-gray-500 mb-1">Rendement net</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-500 mb-1">Rendement net</p>
                         <p class="text-lg font-bold" :class="getYieldColor(rentabilityResult.net_yield)">
                           {{ rentabilityResult.net_yield }}%
                         </p>
@@ -495,13 +610,13 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
                     </div>
                     <div class="space-y-1.5 text-xs">
                       <div class="flex justify-between">
-                        <span class="text-gray-500">Cashflow mensuel</span>
+                        <span class="text-gray-600 dark:text-gray-500">Cashflow mensuel</span>
                         <span class="font-medium" :class="rentabilityResult.monthly_cashflow >= 0 ? 'text-green-500' : 'text-red-500'">
                           {{ formatCurrency(rentabilityResult.monthly_cashflow) }}
                         </span>
                       </div>
                       <div class="flex justify-between">
-                        <span class="text-gray-500">Retour sur investissement</span>
+                        <span class="text-gray-600 dark:text-gray-500">Retour sur investissement</span>
                         <span class="font-medium text-black dark:text-white">{{ rentabilityResult.payback_years }} ans</span>
                       </div>
                     </div>
@@ -509,22 +624,16 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
                 </div>
               </div>
 
-              <!-- Save button -->
-              <USeparator />
-              <UButton block variant="ghost" color="neutral" size="lg" icon="i-lucide-heart">
-                Sauvegarder
-              </UButton>
-
               <!-- Quick stats -->
               <div class="pt-2 border-t border-gray-200 dark:border-gray-800 space-y-3 text-sm">
                 <div v-if="property.publication_date" class="flex justify-between">
-                  <span class="text-gray-500">Publié le</span>
+                  <span class="text-gray-600 dark:text-gray-500">Publié le</span>
                   <span class="font-medium text-black dark:text-white">
                     {{ new Date(property.publication_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) }}
                   </span>
                 </div>
                 <div v-if="property.modification_date" class="flex justify-between">
-                  <span class="text-gray-500">Modifié le</span>
+                  <span class="text-gray-600 dark:text-gray-500">Modifié le</span>
                   <span class="font-medium text-black dark:text-white">
                     {{ new Date(property.modification_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) }}
                   </span>

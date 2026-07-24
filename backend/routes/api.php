@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EstimationController;
 use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\VenteController;
 use Illuminate\Support\Facades\Route;
@@ -27,5 +28,12 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
+
+        Route::get('/estimations', [EstimationController::class, 'index']);
+        Route::get('/estimations/by-listing/{listingId}', [EstimationController::class, 'byListing']);
+        Route::post('/estimations', [EstimationController::class, 'store']);
+        Route::get('/estimations/{estimation}', [EstimationController::class, 'show']);
+        Route::patch('/estimations/{estimation}', [EstimationController::class, 'update']);
+        Route::delete('/estimations/{estimation}', [EstimationController::class, 'destroy']);
     });
 });

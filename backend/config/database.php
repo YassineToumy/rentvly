@@ -13,7 +13,7 @@ return [
             'port'           => env('DB_PORT', '6543'),
             'database'       => env('DB_DATABASE', 'rentvly_db'),
             'username'       => env('DB_USERNAME', 'root'),
-            'password'       => env('DB_PASSWORD', 'root'),
+            'password'       => env('DB_PASSWORD', ''),
             'charset'        => 'utf8',
             'prefix'         => '',
             'prefix_indexes' => true,

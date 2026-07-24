@@ -1,8 +1,10 @@
 <template>
-  <UApp>
-    <NuxtRouteAnnouncer />
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-  </UApp>
+  <ColorScheme>
+    <UApp>
+      <NuxtRouteAnnouncer />
+      <NuxtLayout>
+        <NuxtPage :key="$route.fullPath" />
+      </NuxtLayout>
+    </UApp>
+  </ColorScheme>
 </template>

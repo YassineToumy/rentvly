@@ -8,7 +8,7 @@
           n'importe quel bien
           en quelques secondes
         </h1>
-        <p class="mt-6 text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+        <p class="mt-6 text-lg text-gray-600 dark:text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
           Rentvly estime automatiquement le loyer grâce à l'IA, puis calcule le rendement,
           le cashflow et la fiscalité de votre investissement locatif.
         </p>
@@ -35,7 +35,7 @@
               <UIcon name="i-lucide-home" class="size-7 text-black dark:text-white" />
             </div>
             <h3 class="font-semibold text-black dark:text-white mb-2">1. Décrivez le bien</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-gray-600 dark:text-gray-500 dark:text-gray-400">
               Ville, surface, pièces, équipements — les caractéristiques du bien à analyser.
             </p>
           </div>
@@ -45,7 +45,7 @@
               <UIcon name="i-lucide-brain" class="size-7 text-black dark:text-white" />
             </div>
             <h3 class="font-semibold text-black dark:text-white mb-2">2. Estimation du loyer</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-gray-600 dark:text-gray-500 dark:text-gray-400">
               Notre IA prédit le loyer mensuel en comparant avec des milliers d'annonces similaires.
             </p>
           </div>
@@ -55,7 +55,7 @@
               <UIcon name="i-lucide-calculator" class="size-7 text-black dark:text-white" />
             </div>
             <h3 class="font-semibold text-black dark:text-white mb-2">3. Simulez le financement</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-gray-600 dark:text-gray-500 dark:text-gray-400">
               Prix d'achat, apport, crédit, travaux, charges — ajustez tous les paramètres de votre projet.
             </p>
           </div>
@@ -65,7 +65,7 @@
               <UIcon name="i-lucide-bar-chart-3" class="size-7 text-black dark:text-white" />
             </div>
             <h3 class="font-semibold text-black dark:text-white mb-2">4. Résultats complets</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-gray-600 dark:text-gray-500 dark:text-gray-400">
               Rendement brut & net, cashflow mensuel, retour sur investissement et analyse fiscale.
             </p>
           </div>
@@ -83,32 +83,32 @@
           <div class="p-6 border border-gray-200 dark:border-gray-800 rounded-xl">
             <UIcon name="i-lucide-euro" class="size-6 text-black dark:text-white mb-3" />
             <h3 class="font-semibold text-black dark:text-white mb-1">Loyer estimé par IA</h3>
-            <p class="text-sm text-gray-500">Prédiction du loyer mensuel basée sur 50 000+ annonces et un modèle robuste</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500">Prédiction du loyer mensuel basée sur 50 000+ annonces et un modèle robuste</p>
           </div>
           <div class="p-6 border border-gray-200 dark:border-gray-800 rounded-xl">
             <UIcon name="i-lucide-percent" class="size-6 text-black dark:text-white mb-3" />
             <h3 class="font-semibold text-black dark:text-white mb-1">Rendement brut & net</h3>
-            <p class="text-sm text-gray-500">Calcul automatique en intégrant toutes les charges : taxe foncière, copro, gestion, assurance.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500">Calcul automatique en intégrant toutes les charges : taxe foncière, copro, gestion, assurance.</p>
           </div>
           <div class="p-6 border border-gray-200 dark:border-gray-800 rounded-xl">
             <UIcon name="i-lucide-wallet" class="size-6 text-black dark:text-white mb-3" />
             <h3 class="font-semibold text-black dark:text-white mb-1">Cashflow mensuel</h3>
-            <p class="text-sm text-gray-500">Visualisez ce qu'il reste chaque mois après remboursement du crédit et paiement des charges.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500">Visualisez ce qu'il reste chaque mois après remboursement du crédit et paiement des charges.</p>
           </div>
           <div class="p-6 border border-gray-200 dark:border-gray-800 rounded-xl">
             <UIcon name="i-lucide-landmark" class="size-6 text-black dark:text-white mb-3" />
             <h3 class="font-semibold text-black dark:text-white mb-1">Simulation de crédit</h3>
-            <p class="text-sm text-gray-500">Mensualités, durée, taux, apport — simulez votre financement bancaire en temps réel.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500">Mensualités, durée, taux, apport — simulez votre financement bancaire en temps réel.</p>
           </div>
           <div class="p-6 border border-gray-200 dark:border-gray-800 rounded-xl">
             <UIcon name="i-lucide-receipt" class="size-6 text-black dark:text-white mb-3" />
             <h3 class="font-semibold text-black dark:text-white mb-1">Fiscalité estimée</h3>
-            <p class="text-sm text-gray-500">Comparaison LMNP, location nue, micro-BIC pour choisir le meilleur régime fiscal.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500">Comparaison LMNP, location nue, micro-BIC pour choisir le meilleur régime fiscal.</p>
           </div>
           <div class="p-6 border border-gray-200 dark:border-gray-800 rounded-xl">
             <UIcon name="i-lucide-clock" class="size-6 text-black dark:text-white mb-3" />
             <h3 class="font-semibold text-black dark:text-white mb-1">Retour sur investissement</h3>
-            <p class="text-sm text-gray-500">Combien d'années pour rembourser votre investissement avec les loyers perçus.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500">Combien d'années pour rembourser votre investissement avec les loyers perçus.</p>
           </div>
         </div>
       </div>
@@ -120,19 +120,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div class="text-center">
             <p class="text-3xl font-bold text-black dark:text-white">50k+</p>
-            <p class="text-sm text-gray-500 mt-1">Annonces analysées</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500 mt-1">Annonces analysées</p>
           </div>
           <div class="text-center">
             <p class="text-3xl font-bold text-black dark:text-white">87%</p>
-            <p class="text-sm text-gray-500 mt-1">Précision (R²)</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500 mt-1">Précision (R²)</p>
           </div>
           <div class="text-center">
             <p class="text-3xl font-bold text-black dark:text-white">~112€</p>
-            <p class="text-sm text-gray-500 mt-1">Erreur moyenne</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500 mt-1">Erreur moyenne</p>
           </div>
           <div class="text-center">
             <p class="text-3xl font-bold text-black dark:text-white">6k+</p>
-            <p class="text-sm text-gray-500 mt-1">Villes couvertes</p>
+            <p class="text-sm text-gray-600 dark:text-gray-500 mt-1">Villes couvertes</p>
           </div>
         </div>
       </div>

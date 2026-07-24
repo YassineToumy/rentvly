@@ -2,12 +2,13 @@
 import { ref, watch } from 'vue'
 import { usePrediction } from '../composables/usePrediction'
 
-
 const { form, loading, error, predictionResult, rentabilityResult, predictRent, calculateRentability, resetForm } = usePrediction()
+const { isAuthenticated } = useAuth()
+const { saveEstimation, saving: savingEstimation } = useEstimations()
 
 const purchasePrice = ref<number | null>(null)
-const activeTab = ref('predict')
 const showResults = ref(false)
+const saveSuccess = ref(false)
 
 // Steps for the form
 const currentStep = ref(0)
@@ -67,6 +68,27 @@ async function handleRentability() {
   await calculateRentability(purchasePrice.value)
 }
 
+async function handleSave() {
+  if (!predictionResult.value) return
+  if (!isAuthenticated.value) {
+    await navigateTo('/login')
+    return
+  }
+
+  saveSuccess.value = false
+  const saved = await saveEstimation({
+    form: { ...form },
+    prediction: predictionResult.value,
+    rentability: rentabilityResult.value,
+    purchase_price: purchasePrice.value,
+  })
+
+  if (saved) {
+    saveSuccess.value = true
+    await navigateTo(`/dashboard/estimations/${saved.id}`)
+  }
+}
+
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(value)
 }
@@ -87,7 +109,7 @@ function getYieldColor(yieldPct: number): string {
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
           Estimateur de Loyer
         </h1>
-        <p class="mt-2 text-gray-500 dark:text-gray-400">
+        <p class="mt-2 text-gray-600 dark:text-gray-500 dark:text-gray-400">
           Estimez le loyer mensuel de votre bien immobilier grâce à notre modèle de prédiction.
         </p>
       </div>
@@ -109,7 +131,7 @@ function getYieldColor(yieldPct: number): string {
                 class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
                 :class="i === currentStep
                   ? 'bg-primary-50 dark:bg-primary-950 text-primary-600 dark:text-primary-400'
-                  : 'text-gray-400 hover:text-gray-600'"
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-600'"
                 @click="currentStep = i"
               >
                 <UIcon :name="step.icon" class="size-5" />
@@ -310,16 +332,16 @@ function getYieldColor(yieldPct: number): string {
           <!-- Prediction result -->
           <UCard v-if="predictionResult">
             <div class="text-center">
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Loyer mensuel estimé</p>
+              <p class="text-sm text-gray-600 dark:text-gray-500 dark:text-gray-400 mb-1">Loyer mensuel estimé</p>
               <p class="text-4xl font-bold text-primary-600 dark:text-primary-400">
                 {{ formatCurrency(predictionResult.predicted_rent) }}
               </p>
-              <p class="text-xs text-gray-400 mt-2">
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">
                 {{ formatCurrency(predictionResult.confidence_range.low) }}
                 –
                 {{ formatCurrency(predictionResult.confidence_range.high) }}
               </p>
-              <p class="text-xs text-gray-400">
+              <p class="text-xs text-gray-600 dark:text-gray-400">
                 Marge d'erreur: ±{{ predictionResult.confidence_range.mape_pct }}%
               </p>
             </div>
@@ -328,11 +350,11 @@ function getYieldColor(yieldPct: number): string {
 
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
-                <span class="text-gray-500">Loyer annuel</span>
+                <span class="text-gray-600 dark:text-gray-500">Loyer annuel</span>
                 <span class="font-medium">{{ formatCurrency(predictionResult.predicted_rent * 12) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-500">Prix au m²/mois</span>
+                <span class="text-gray-600 dark:text-gray-500">Prix au m²/mois</span>
                 <span class="font-medium">
                   {{ form.surface_area ? formatCurrency(predictionResult.predicted_rent / form.surface_area) : '–' }}/m²
                 </span>
@@ -343,8 +365,8 @@ function getYieldColor(yieldPct: number): string {
           <!-- Waiting state -->
           <UCard v-if="!predictionResult && !error">
             <div class="text-center py-6">
-              <UIcon name="i-lucide-home" class="size-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <p class="text-sm text-gray-400">
+              <UIcon name="i-lucide-home" class="size-12 text-gray-700 dark:text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 Remplissez le formulaire et cliquez sur "Estimer le loyer"
               </p>
             </div>
@@ -389,13 +411,13 @@ function getYieldColor(yieldPct: number): string {
 
               <div class="grid grid-cols-2 gap-4">
                 <div class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                  <p class="text-xs text-gray-500 mb-1">Rendement brut</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-500 mb-1">Rendement brut</p>
                   <p class="text-xl font-bold" :class="getYieldColor(rentabilityResult.gross_yield)">
                     {{ rentabilityResult.gross_yield }}%
                   </p>
                 </div>
                 <div class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                  <p class="text-xs text-gray-500 mb-1">Rendement net</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-500 mb-1">Rendement net</p>
                   <p class="text-xl font-bold" :class="getYieldColor(rentabilityResult.net_yield)">
                     {{ rentabilityResult.net_yield }}%
                   </p>
@@ -404,31 +426,41 @@ function getYieldColor(yieldPct: number): string {
 
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
-                  <span class="text-gray-500">Loyer annuel</span>
+                  <span class="text-gray-600 dark:text-gray-500">Loyer annuel</span>
                   <span class="font-medium">{{ formatCurrency(rentabilityResult.annual_rent) }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-gray-500">Cashflow mensuel net</span>
+                  <span class="text-gray-600 dark:text-gray-500">Cashflow mensuel net</span>
                   <span class="font-medium" :class="rentabilityResult.monthly_cashflow >= 0 ? 'text-green-500' : 'text-red-500'">
                     {{ formatCurrency(rentabilityResult.monthly_cashflow) }}
                   </span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-gray-500">Retour sur investissement</span>
+                  <span class="text-gray-600 dark:text-gray-500">Retour sur investissement</span>
                   <span class="font-medium">{{ rentabilityResult.payback_years }} ans</span>
                 </div>
               </div>
             </div>
           </UCard>
 
-          <!-- Reset -->
+          <UButton
+            v-if="predictionResult"
+            block
+            color="primary"
+            icon="i-lucide-bookmark"
+            :loading="savingEstimation"
+            @click="handleSave"
+          >
+            {{ isAuthenticated ? 'Enregistrer dans mon tableau de bord' : 'Se connecter pour enregistrer' }}
+          </UButton>
+
           <UButton
             v-if="predictionResult"
             block
             variant="ghost"
             color="neutral"
             icon="i-lucide-rotate-ccw"
-            @click="resetForm(); showResults = false"
+            @click="resetForm(); showResults = false; saveSuccess = false"
           >
             Nouvelle estimation
           </UButton>

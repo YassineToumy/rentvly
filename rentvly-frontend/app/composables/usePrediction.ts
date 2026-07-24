@@ -121,6 +121,11 @@ export function usePrediction() {
 
   const form = reactive<PropertyForm>({ ...defaultForm })
 
+  function formatFetchError(e: any): string {
+    const details = e?.data?.details ? ` (${e.data.details})` : ''
+    return (e?.data?.error || e?.data?.message || e.message || 'An error occurred') + details
+  }
+
   /**
    * POST /api/v1/predict
    * Sends the form as-is (snake_case). Laravel maps it to model fields.
@@ -145,7 +150,7 @@ export function usePrediction() {
         throw new Error(res?.error || 'Prediction failed')
       }
     } catch (e: any) {
-      error.value = e?.data?.error || e?.data?.message || e.message || 'An error occurred'
+      error.value = formatFetchError(e)
     } finally {
       loading.value = false
     }
@@ -174,7 +179,7 @@ export function usePrediction() {
         throw new Error('Rentability calculation failed')
       }
     } catch (e: any) {
-      error.value = e?.data?.error || e?.data?.message || e.message || 'An error occurred'
+      error.value = formatFetchError(e)
     } finally {
       loading.value = false
     }
