@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('departements', function (Blueprint $t) {
+            $t->string('code_departement', 3)->primary();
+            $t->string('nom');
+            $t->string('code_region', 3);
+            $t->timestamps();
+
+            $t->foreign('code_region')->references('code_region')->on('regions')->cascadeOnUpdate();
+            $t->index('code_region');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('departements');
+    }
+};

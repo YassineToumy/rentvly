@@ -9,11 +9,11 @@ return [
         // ── PostgreSQL (users, regions, default) ──
         'pgsql' => [
             'driver'         => 'pgsql',
-            'host'           => env('DB_HOST', '72.60.215.111'),
-            'port'           => env('DB_PORT', '6543'),
+            'host'           => env('DB_HOST', 'localhost'),
+            'port'           => env('DB_PORT', '5432'),
             'database'       => env('DB_DATABASE', 'rentvly_db'),
-            'username'       => env('DB_USERNAME', 'root'),
-            'password'       => env('DB_PASSWORD', ''),
+            'username'       => env('DB_USERNAME', 'rentvly'),
+            'password'       => env('DB_PASSWORD', 'rentvly'),
             'charset'        => 'utf8',
             'prefix'         => '',
             'prefix_indexes' => true,

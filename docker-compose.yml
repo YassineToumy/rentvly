@@ -1,0 +1,182 @@
+# Rentvly — stack complète (frontend + backend Laravel + API ML + PostgreSQL)
+#
+# Depuis la racine du projet :
+#   docker compose up --build -d
+#
+# Initialiser / régénérer la base (schéma + seed + import Mongo → Postgres) :
+#   docker compose --profile setup run --rm migrate
+#   docker compose --profile setup run --rm import-ventes
+#
+# Services exposés :
+#   Frontend  → http://localhost:3000
+#   Backend   → http://localhost:8080
+#   API ML    → http://localhost:8000
+#   Postgres  → localhost:5432
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rentvly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-rentvly_db}
+      POSTGRES_USER: ${DB_USERNAME:-rentvly}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-rentvly}
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - rentvly_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-rentvly} -d ${DB_DATABASE:-rentvly_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - rentvly
+
+  api-python:
+    build:
+      context: ./api-python
+      dockerfile: Dockerfile
+    container_name: rentvly-api-python
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PORT: ${API_PYTHON_PORT:-8000}
+      MODEL_PATH: ${MODEL_PATH:-model.cbm}
+      METADATA_PATH: ${METADATA_PATH:-model_metadata.json}
+      MONGODB_URI: ${MONGODB_URI:-}
+      MONGO_DATABASE: ${MONGO_DATABASE:-bienici}
+      MONGO_LOCATIONS_COLLECTION: ${MONGO_LOCATIONS_COLLECTION:-locations_clean}
+    ports:
+      - "${API_PYTHON_HOST_PORT:-8000}:8000"
+    networks:
+      - rentvly
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rentvly-backend
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_NAME: ${APP_NAME:-Rentvly}
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      LOG_CHANNEL: ${LOG_CHANNEL:-stack}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      DB_CONNECTION: pgsql
+      # Hostname du service Docker (pas localhost)
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-rentvly_db}
+      DB_USERNAME: ${DB_USERNAME:-rentvly}
+      DB_PASSWORD: ${DB_PASSWORD:-rentvly}
+      MONGO_URI: ${MONGO_URI:-}
+      MONGO_DATABASE: ${MONGO_DATABASE:-bienici}
+      MONGO_IMPORT_DSN: ${MONGO_IMPORT_DSN:-}
+      MONGO_IMPORT_DATABASE: ${MONGO_IMPORT_DATABASE:-bienici}
+      MONGO_IMPORT_VENTES_COLLECTION: ${MONGO_IMPORT_VENTES_COLLECTION:-ventes}
+      PREDICTION_API_URL: ${PREDICTION_API_URL:-http://api-python:8000}
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost,localhost:3000,127.0.0.1,127.0.0.1:3000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      SESSION_DRIVER: ${SESSION_DRIVER:-database}
+      SESSION_LIFETIME: ${SESSION_LIFETIME:-120}
+    ports:
+      - "${BACKEND_HOST_PORT:-8080}:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api-python:
+        condition: service_started
+    networks:
+      - rentvly
+
+  frontend:
+    build:
+      context: ./rentvly-frontend
+      dockerfile: Dockerfile
+      args:
+        NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://localhost:8080/api/v1}
+    container_name: rentvly-frontend
+    restart: unless-stopped
+    environment:
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://localhost:8080/api/v1}
+      HOST: 0.0.0.0
+      PORT: 3000
+      NITRO_HOST: 0.0.0.0
+      NITRO_PORT: 3000
+    ports:
+      - "${FRONTEND_HOST_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    networks:
+      - rentvly
+
+  # ── Outils one-shot (profil setup) ──
+  migrate:
+    profiles: ["setup"]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rentvly-migrate
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_ENV: local
+      APP_KEY: ${APP_KEY:-base64:dGVtcG9yYXJ5a2V5Zm9yZG9ja2VyYnVpbGQxMjM0NTY3ODkw}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-rentvly_db}
+      DB_USERNAME: ${DB_USERNAME:-rentvly}
+      DB_PASSWORD: ${DB_PASSWORD:-rentvly}
+    command: ["php", "artisan", "migrate:fresh", "--seed", "--force"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rentvly
+
+  import-ventes:
+    profiles: ["setup"]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.import
+    container_name: rentvly-import-ventes
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_ENV: local
+      APP_KEY: ${APP_KEY:-base64:dGVtcG9yYXJ5a2V5Zm9yZG9ja2VyYnVpbGQxMjM0NTY3ODkw}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-rentvly_db}
+      DB_USERNAME: ${DB_USERNAME:-rentvly}
+      DB_PASSWORD: ${DB_PASSWORD:-rentvly}
+      MONGO_IMPORT_DSN: ${MONGO_IMPORT_DSN}
+      MONGO_IMPORT_DATABASE: ${MONGO_IMPORT_DATABASE:-bienici}
+      MONGO_IMPORT_VENTES_COLLECTION: ${MONGO_IMPORT_VENTES_COLLECTION:-ventes}
+    command: ["php", "artisan", "import:ventes"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rentvly
+
+networks:
+  rentvly:
+    driver: bridge
+
+volumes:
+  rentvly_pgdata:
