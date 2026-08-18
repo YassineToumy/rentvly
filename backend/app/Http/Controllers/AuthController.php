@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -34,7 +33,9 @@ class AuthController extends Controller
         $user = User::create([
             'name'     => $validated['first_name'] . ' ' . $validated['last_name'],
             'email'    => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            // 'password' is cast as 'hashed' on the User model — pass plain text
+            'password' => $validated['password'],
+            'role'     => 'investor',
         ]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -114,6 +115,7 @@ class AuthController extends Controller
             'id'         => $user->id,
             'name'       => $user->name,
             'email'      => $user->email,
+            'role'       => $user->role ?? 'investor',
             'created_at' => $user->created_at->toISOString(),
         ];
     }

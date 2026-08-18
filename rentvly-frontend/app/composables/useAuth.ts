@@ -2,6 +2,7 @@ interface User {
   id: number
   name: string
   email: string
+  role: 'admin' | 'investor'
   created_at: string
 }
 
@@ -52,7 +53,7 @@ export function useAuth() {
       })
       if (res.success) {
         setAuth(res.data.user, res.data.token)
-        navigateTo('/dashboard')
+        navigateTo(res.data.user?.role === 'admin' ? '/admin' : '/dashboard')
       }
     } catch (e: any) {
       error.value = e?.data?.message || e?.data?.error || "Erreur lors de l'inscription."
@@ -71,7 +72,7 @@ export function useAuth() {
       })
       if (res.success) {
         setAuth(res.data.user, res.data.token)
-        navigateTo('/dashboard')
+        navigateTo(res.data.user?.role === 'admin' ? '/admin' : '/dashboard')
       }
     } catch (e: any) {
       error.value = e?.data?.error || e?.data?.message || 'Email ou mot de passe incorrect.'
@@ -104,6 +105,7 @@ export function useAuth() {
   }
 
   const isAuthenticated = computed(() => !!token.value)
+  const isAdmin = computed(() => user.value?.role === 'admin')
 
   return {
     user,
@@ -111,6 +113,7 @@ export function useAuth() {
     loading,
     error,
     isAuthenticated,
+    isAdmin,
     register,
     login,
     logout,

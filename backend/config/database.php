@@ -9,7 +9,8 @@ return [
         // ── PostgreSQL (users, regions, default) ──
         'pgsql' => [
             'driver'         => 'pgsql',
-            'host'           => env('DB_HOST', 'localhost'),
+            // 127.0.0.1 avoids Windows resolving localhost → ::1 (IPv6)
+            'host'           => env('DB_HOST', '127.0.0.1'),
             'port'           => env('DB_PORT', '5432'),
             'database'       => env('DB_DATABASE', 'rentvly_db'),
             'username'       => env('DB_USERNAME', 'rentvly'),

@@ -16,8 +16,8 @@
           <UButton to="/listings" size="lg" icon="i-lucide-building" color="neutral" variant="solid">
             Voir les biens en vente
           </UButton>
-          <UButton to="/predict" size="lg" icon="i-lucide-calculator" variant="outline" color="neutral">
-            Estimer un loyer
+          <UButton to="/statistiques" size="lg" icon="i-lucide-chart-column" variant="outline" color="neutral">
+            Statistiques du marché
           </UButton>
         </div>
       </div>

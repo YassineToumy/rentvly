@@ -20,6 +20,16 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Test User',
                 'password' => Hash::make('password'),
+                'role' => 'investor',
+            ]
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'admin@rentvly.com'],
+            [
+                'name' => 'Admin Rentvly',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
             ]
         );
     }

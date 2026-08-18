@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase || 'http://localhost:8080/api/v1'
+const route = useRoute()
 
 const properties = ref<any[]>([])
 const loading = ref(false)
@@ -40,7 +41,11 @@ async function fetchProperties(page = 1) {
 }
 
 watch([selectedType, priceRange, sortBy], () => fetchProperties(1))
-onMounted(() => fetchProperties())
+onMounted(() => {
+  const q = route.query.search
+  if (typeof q === 'string' && q.trim()) searchCity.value = q.trim()
+  fetchProperties()
+})
 
 let searchTimeout: ReturnType<typeof setTimeout>
 function onSearchInput(val: string) {
@@ -212,8 +217,20 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
               <span v-if="p.owner_name" class="text-xs text-gray-600 dark:text-gray-400 truncate mr-3">{{ p.owner_name }}</span>
               <div v-else />
               <div class="flex gap-2 flex-shrink-0">
-                <UButton to="/predict" variant="soft" color="primary" size="xs" icon="i-lucide-calculator">Analyser</UButton>
-                <button class="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-gray-800 transition-colors">
+                <UButton
+                  variant="soft"
+                  color="primary"
+                  size="xs"
+                  icon="i-lucide-calculator"
+                  @click.prevent.stop="navigateTo(`/listings/${p.id}?analyse=1`)"
+                >
+                  Analyser
+                </UButton>
+                <button
+                  type="button"
+                  class="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  @click.prevent.stop
+                >
                   <UIcon name="i-lucide-heart" class="size-4" />
                 </button>
               </div>

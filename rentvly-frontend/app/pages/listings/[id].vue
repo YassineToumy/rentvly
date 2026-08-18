@@ -124,6 +124,17 @@ async function handleRentability() {
   await calculateRentability(purchasePrice.value)
 }
 
+async function runFullAnalysis() {
+  if (!property.value) return
+  await handleEstimate()
+  if (!predictionResult.value) return
+  if (purchasePrice.value && purchasePrice.value > 0) {
+    await handleRentability()
+  }
+  await nextTick()
+  document.getElementById('analyse')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 async function loadListingEstimation() {
   if (!isAuthenticated.value) {
     listingEstimation.value = null
@@ -173,13 +184,14 @@ async function loadPage() {
   resetForm()
   await fetchProperty()
   await loadListingEstimation()
+  if (route.query.analyse != null && property.value) {
+    await runFullAnalysis()
+  }
 }
 
 watch(() => route.params.id, () => {
   if (route.params.id) loadPage()
 })
-
-onMounted(loadPage)
 
 watch(isAuthenticated, loadListingEstimation)
 
@@ -207,6 +219,22 @@ const typeLabel = (t: string | null) => {
 }
 
 const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop'
+const lightboxOpen = ref(false)
+
+function currentPhoto(): string {
+  const photos = property.value?.photos
+  if (photos?.length) return photos[activeImage.value] || fallbackImage
+  return fallbackImage
+}
+
+function openLightbox(index?: number) {
+  if (typeof index === 'number') activeImage.value = index
+  lightboxOpen.value = true
+}
+
+function closeLightbox() {
+  lightboxOpen.value = false
+}
 
 function nextImage() {
   if (property.value?.photos?.length) {
@@ -218,6 +246,29 @@ function prevImage() {
     activeImage.value = (activeImage.value - 1 + property.value.photos.length) % property.value.photos.length
   }
 }
+
+function onLightboxKey(e: KeyboardEvent) {
+  if (!lightboxOpen.value) return
+  if (e.key === 'Escape') closeLightbox()
+  if (e.key === 'ArrowRight') nextImage()
+  if (e.key === 'ArrowLeft') prevImage()
+}
+
+watch(lightboxOpen, (open) => {
+  if (import.meta.client) {
+    document.body.style.overflow = open ? 'hidden' : ''
+  }
+})
+
+onMounted(() => {
+  window.addEventListener('keydown', onLightboxKey)
+  loadPage()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onLightboxKey)
+  if (import.meta.client) document.body.style.overflow = ''
+})
 
 function getFeatures(p: any): { label: string; active: boolean }[] {
   const map: Record<string, string> = {
@@ -270,20 +321,35 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
             <!-- Gallery -->
             <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900">
               <div class="relative h-72 sm:h-96">
-                <img
-                  :src="property.photos?.length ? property.photos[activeImage] : fallbackImage"
-                  :alt="property.title"
-                  class="w-full h-full object-cover"
-                  @error="($event.target as HTMLImageElement).src = fallbackImage"
-                />
+                <button
+                  type="button"
+                  class="absolute inset-0 w-full h-full cursor-zoom-in"
+                  aria-label="Agrandir l'image"
+                  @click="openLightbox(activeImage)"
+                >
+                  <img
+                    :src="currentPhoto()"
+                    :alt="property.title"
+                    class="w-full h-full object-cover"
+                    @error="($event.target as HTMLImageElement).src = fallbackImage"
+                  />
+                </button>
                 <template v-if="property.photos?.length > 1">
-                  <button class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur text-white flex items-center justify-center hover:bg-black/70" @click="prevImage">
+                  <button
+                    type="button"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur text-white flex items-center justify-center hover:bg-black/70"
+                    @click.stop="prevImage"
+                  >
                     <UIcon name="i-lucide-chevron-left" class="size-5" />
                   </button>
-                  <button class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur text-white flex items-center justify-center hover:bg-black/70" @click="nextImage">
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur text-white flex items-center justify-center hover:bg-black/70"
+                    @click.stop="nextImage"
+                  >
                     <UIcon name="i-lucide-chevron-right" class="size-5" />
                   </button>
-                  <div class="absolute bottom-3 right-3 px-2 py-1 rounded-md bg-black/60 text-white text-xs">
+                  <div class="absolute bottom-3 right-3 z-10 px-2 py-1 rounded-md bg-black/60 text-white text-xs pointer-events-none">
                     {{ activeImage + 1 }} / {{ property.photos.length }}
                   </div>
                 </template>
@@ -292,9 +358,10 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
                 <button
                   v-for="(img, i) in property.photos"
                   :key="i"
+                  type="button"
                   class="w-16 h-12 rounded-md overflow-hidden flex-shrink-0 border-2 transition-colors"
                   :class="i === activeImage ? 'border-primary-500' : 'border-transparent opacity-60 hover:opacity-100'"
-                  @click="activeImage = Number(i)"
+                  @click="openLightbox(Number(i))"
                 >
                   <img :src="img" class="w-full h-full object-cover" @error="($event.target as HTMLImageElement).src = fallbackImage" />
                 </button>
@@ -457,7 +524,7 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
               <USeparator />
 
               <!-- Estimation section -->
-              <div>
+              <div id="analyse">
                 <div class="flex items-center gap-2 mb-3">
                   <UIcon name="i-lucide-calculator" class="size-4 text-primary-500" />
                   <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Estimation du loyer</h3>
@@ -478,14 +545,14 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
                     size="lg"
                     icon="i-lucide-calculator"
                     class="shadow-lg shadow-primary-500/20"
-                    @click="handleEstimate"
+                    @click="runFullAnalysis"
                   >
                     Estimer le loyer
                   </UButton>
                 </div>
 
                 <!-- Loading -->
-                <div v-else-if="predLoading" class="text-center py-4">
+                <div v-else-if="predLoading && !predictionResult" class="text-center py-4">
                   <UIcon name="i-lucide-loader-2" class="size-6 animate-spin text-primary-500 mx-auto" />
                   <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Estimation en cours...</p>
                 </div>
@@ -644,5 +711,59 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
         </div>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="lightboxOpen && property"
+        class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Galerie photos"
+        @click.self="closeLightbox"
+      >
+        <button
+          type="button"
+          class="absolute top-4 right-4 z-20 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+          aria-label="Fermer"
+          @click="closeLightbox"
+        >
+          <UIcon name="i-lucide-x" class="size-6" />
+        </button>
+
+        <button
+          v-if="property.photos?.length > 1"
+          type="button"
+          class="absolute left-3 sm:left-6 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+          aria-label="Image précédente"
+          @click="prevImage"
+        >
+          <UIcon name="i-lucide-chevron-left" class="size-7" />
+        </button>
+
+        <img
+          :src="currentPhoto()"
+          :alt="property.title"
+          class="max-w-[92vw] max-h-[88vh] object-contain select-none"
+          @error="($event.target as HTMLImageElement).src = fallbackImage"
+        />
+
+        <button
+          v-if="property.photos?.length > 1"
+          type="button"
+          class="absolute right-3 sm:right-6 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+          aria-label="Image suivante"
+          @click="nextImage"
+        >
+          <UIcon name="i-lucide-chevron-right" class="size-7" />
+        </button>
+
+        <div
+          v-if="property.photos?.length"
+          class="absolute bottom-5 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-white/10 text-white text-sm"
+        >
+          {{ activeImage + 1 }} / {{ property.photos.length }}
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
-const { user, isAuthenticated, logout, fetchUser } = useAuth()
+const { user, isAuthenticated, isAdmin, logout, fetchUser } = useAuth()
 const colorMode = useColorMode()
 
 onMounted(() => {
@@ -10,16 +10,24 @@ onMounted(() => {
 const navItems = [
   { label: 'Accueil', to: '/', icon: 'i-lucide-home' },
   { label: 'Biens en vente', to: '/listings', icon: 'i-lucide-building' },
+  { label: 'Statistiques', to: '/statistiques', icon: 'i-lucide-chart-column' },
   { label: 'Estimer', to: '/predict', icon: 'i-lucide-calculator' },
 ]
 
-const authNavItems = [
-  { label: 'Dashboard', to: '/dashboard', icon: 'i-lucide-layout-dashboard' },
-  { label: 'Biens en vente', to: '/listings', icon: 'i-lucide-building' },
-  { label: 'Estimer', to: '/predict', icon: 'i-lucide-calculator' },
-]
+const authNavItems = computed(() => {
+  const items = [
+    { label: 'Dashboard', to: '/dashboard', icon: 'i-lucide-layout-dashboard' },
+    { label: 'Biens en vente', to: '/listings', icon: 'i-lucide-building' },
+    { label: 'Statistiques', to: '/statistiques', icon: 'i-lucide-chart-column' },
+    { label: 'Estimer', to: '/predict', icon: 'i-lucide-calculator' },
+  ]
+  if (isAdmin.value) {
+    items.unshift({ label: 'Admin', to: '/admin', icon: 'i-lucide-shield' })
+  }
+  return items
+})
 
-const currentNav = computed(() => isAuthenticated.value ? authNavItems : navItems)
+const currentNav = computed(() => isAuthenticated.value ? authNavItems.value : navItems)
 
 const mobileMenuOpen = ref(false)
 
@@ -163,6 +171,7 @@ function toggleColorMode() {
           </div>
           <div class="flex items-center gap-6 text-xs app-muted">
             <NuxtLink to="/" class="hover:opacity-80 transition-opacity">Accueil</NuxtLink>
+            <NuxtLink to="/statistiques" class="hover:opacity-80 transition-opacity">Statistiques</NuxtLink>
             <NuxtLink to="/predict" class="hover:opacity-80 transition-opacity">Estimer</NuxtLink>
             <span>Données Leboncoin · Modèle CatBoost</span>
           </div>

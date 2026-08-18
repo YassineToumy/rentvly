@@ -145,7 +145,7 @@ class VenteController extends Controller
             'has_balcony'         => $exterior['has_balcony'] ?? false,
             'has_pool'            => $exterior['has_pool'] ?? false,
             'has_parking'         => $other['has_parking'] ?? false,
-            'image'               => ($v->photos ?? [])[0] ?? null,
+            'image'               => $this->firstPhotoUrl($v->photos),
             'images_count'        => $v->photos_count,
             'owner_name'          => $v->owner_name,
             'owner_type'          => $v->owner_type,
@@ -169,7 +169,7 @@ class VenteController extends Controller
             'code_insee'         => $v->code_insee,
             'reduced_vat'        => $v->reduced_vat,
             'surface_per_room'   => $v->surface_per_room,
-            'photos'             => $v->photos,
+            'photos'             => $this->photoUrls($v->photos),
             'delivery_date'      => $v->delivery_date,
             'interior_features'  => $v->interior_features,
             'exterior_features'  => $v->exterior_features,
@@ -177,5 +177,33 @@ class VenteController extends Controller
             'modification_date'  => $v->modification_date,
             'scraped_at'         => $v->scraped_at,
         ]);
+    }
+
+    private function firstPhotoUrl(mixed $photos): ?string
+    {
+        $urls = $this->photoUrls($photos);
+
+        return $urls[0] ?? null;
+    }
+
+    private function photoUrls(mixed $photos): array
+    {
+        if (!is_array($photos)) {
+            return [];
+        }
+
+        $urls = [];
+        foreach ($photos as $photo) {
+            if (is_string($photo) && $photo !== '') {
+                $urls[] = $photo;
+            } elseif (is_array($photo)) {
+                $url = $photo['url'] ?? $photo['src'] ?? null;
+                if (is_string($url) && $url !== '') {
+                    $urls[] = $url;
+                }
+            }
+        }
+
+        return $urls;
     }
 }
