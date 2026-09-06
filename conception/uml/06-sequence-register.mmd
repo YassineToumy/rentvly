@@ -1,0 +1,108 @@
+%% Diagramme de séquence — Inscription Rentvly (Register + 2FA)
+%% Optimisé impression / Overleaf (contraste élevé, gros texte, labels courts)
+
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'fontFamily': 'Arial, Helvetica, sans-serif',
+    'fontSize': '20px',
+    'background': '#ffffff',
+    'mainBkg': '#ffffff',
+    'textColor': '#000000',
+    'lineColor': '#000000',
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'secondaryColor': '#ffffff',
+    'tertiaryColor': '#ffffff',
+    'actorBkg': '#ffffff',
+    'actorBorder': '#000000',
+    'actorTextColor': '#000000',
+    'actorLineColor': '#000000',
+    'signalColor': '#000000',
+    'signalTextColor': '#000000',
+    'labelBoxBkgColor': '#ffffff',
+    'labelBoxBorderColor': '#000000',
+    'labelTextColor': '#000000',
+    'loopTextColor': '#000000',
+    'noteBkgColor': '#ffffff',
+    'noteTextColor': '#000000',
+    'noteBorderColor': '#000000',
+    'activationBkgColor': '#d0d0d0',
+    'activationBorderColor': '#000000',
+    'sequenceNumberColor': '#ffffff'
+  },
+  'sequence': {
+    'diagramMarginX': 40,
+    'diagramMarginY': 20,
+    'actorMargin': 80,
+    'width': 180,
+    'height': 55,
+    'boxMargin': 12,
+    'boxTextMargin': 8,
+    'noteMargin': 12,
+    'messageMargin': 45,
+    'mirrorActors': false,
+    'bottomMarginAdj': 10,
+    'useMaxWidth': false,
+    'rightAngles': false,
+    'showSequenceNumbers': false
+  }
+}}%%
+
+sequenceDiagram
+    actor C as Client
+    participant S as Site
+    participant W as Serveur
+    participant G as Google
+    participant M as Mail
+    participant D as Base de données
+
+    C->>S: Ouvre /register
+
+    alt Inscription classique + 2FA
+        C->>+S: Remplit le formulaire
+        Note over C,S: prénom, nom, e-mail, mot de passe
+        S->>+W: POST /register
+        W->>W: Valide les données
+        W->>+D: E-mail déjà utilisé ?
+        D-->>-W: non
+        W->>+D: Crée compte (non vérifié)
+        D-->>-W: user
+        W->>+D: Sauve code 2FA
+        D-->>-W: code OTP
+        W->>+M: Envoie code 2FA
+        M-->>C: E-mail (code)
+        deactivate M
+        W-->>-S: « Vérifiez votre e-mail »
+        S-->>-C: Affiche saisie du code 2FA
+
+        C->>+S: Saisit le code 2FA
+        S->>+W: POST /verify-2fa
+        W->>+D: Vérifie le code OTP
+        D-->>-W: code valide
+        W->>+D: Active le compte
+        D-->>-W: OK
+        W->>+D: Crée token Sanctum
+        D-->>-W: token
+        W-->>-S: user + token
+        S-->>-C: Redirige (dashboard)
+
+    else Inscription avec Google
+        C->>+S: Continuer avec Google
+        S->>+G: Consentement OAuth
+        G-->>C: Autorisation
+        deactivate G
+        C->>+G: Accepte
+        G-->>-S: code
+        S->>+W: POST /auth/google
+        W->>+G: Profil Gmail
+        G-->>-W: e-mail + id
+        W->>+D: Crée compte vérifié
+        D-->>-W: user
+        Note over W,D: E-mail Google déjà vérifié → pas de 2FA
+        W->>+D: Crée token Sanctum
+        D-->>-W: token
+        W-->>-S: user + token
+        S-->>-C: Redirige (dashboard)
+    end

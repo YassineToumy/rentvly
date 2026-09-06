@@ -14,4 +14,9 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://backend.test/api/v1',
     },
   },
+  app: {
+    head: {
+      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico', key: 'favicon' }],
+    },
+  },
 })

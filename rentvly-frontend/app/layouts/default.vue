@@ -3,6 +3,10 @@ const route = useRoute()
 const { user, isAuthenticated, isAdmin, logout, fetchUser } = useAuth()
 const colorMode = useColorMode()
 
+useHead({
+  link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico', key: 'favicon' }],
+})
+
 onMounted(() => {
   if (isAuthenticated.value && !user.value) fetchUser()
 })

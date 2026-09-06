@@ -3,6 +3,11 @@ const route = useRoute()
 const { user, logout, fetchUser, isAuthenticated } = useAuth()
 const colorMode = useColorMode()
 
+useHead({
+  title: 'Administration — Rentvly',
+  link: [{ rel: 'icon', type: 'image/x-icon', href: '/logo_rentvly_admin.ico', key: 'favicon' }],
+})
+
 onMounted(() => {
   if (isAuthenticated.value && !user.value) fetchUser()
 })
@@ -31,15 +36,13 @@ const userInitial = computed(() => user.value?.name?.charAt(0)?.toUpperCase() ??
 <template>
   <div class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex">
     <aside class="hidden lg:flex w-64 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-      <div class="h-16 px-5 flex items-center gap-3 border-b border-slate-200 dark:border-slate-800">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/25">
-          <UIcon name="i-lucide-shield" class="size-4 text-white" />
-        </div>
-        <div>
-          <p class="text-sm font-semibold tracking-tight">Admin</p>
-          <p class="text-[11px] text-slate-500">Rentvly</p>
-        </div>
-      </div>
+      <NuxtLink to="/admin" class="h-16 px-5 flex items-center gap-3 border-b border-slate-200 dark:border-slate-800">
+        <img
+          src="/logo_rentvly_admin.png"
+          alt="Rentvly Admin"
+          class="h-9 w-auto object-contain"
+        >
+      </NuxtLink>
 
       <nav class="flex-1 p-3 space-y-1">
         <NuxtLink
@@ -77,9 +80,13 @@ const userInitial = computed(() => user.value?.name?.charAt(0)?.toUpperCase() ??
     <div class="flex-1 flex flex-col min-w-0">
       <header class="h-16 px-4 sm:px-6 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40">
         <div class="flex items-center gap-3">
-          <div class="lg:hidden w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center">
-            <UIcon name="i-lucide-shield" class="size-4 text-blue-500" />
-          </div>
+          <NuxtLink to="/admin" class="lg:hidden shrink-0">
+            <img
+              src="/logo_rentvly_admin.png"
+              alt="Rentvly Admin"
+              class="h-8 w-auto object-contain"
+            >
+          </NuxtLink>
           <div>
             <p class="text-sm font-semibold">Administration</p>
             <p class="text-xs text-slate-500 truncate max-w-[200px] sm:max-w-none">{{ user?.email }}</p>

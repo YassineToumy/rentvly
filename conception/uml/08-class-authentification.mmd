@@ -1,0 +1,109 @@
+%% Diagramme de classes — Authentification Rentvly (login / register)
+%% Basé sur le backend Laravel (User, Sanctum, password_reset_tokens, sessions)
+%% Optimisé impression / Overleaf
+
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'fontFamily': 'Arial, Helvetica, sans-serif',
+    'fontSize': '16px',
+    'background': '#ffffff',
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'secondaryColor': '#ffffff',
+    'tertiaryColor': '#ffffff',
+    'mainBkg': '#ffffff',
+    'textColor': '#000000',
+    'classText': '#000000'
+  }
+}}%%
+
+classDiagram
+    direction TB
+
+    class Utilisateur {
+        +int id
+        +string name
+        +string email
+        +string role
+        +datetime email_verified_at
+        +string password
+        +string remember_token
+        +datetime created_at
+        +datetime updated_at
+        +isAdmin() bool
+        +estimations() HasMany
+        +createToken(name) string
+        +tokens() MorphMany
+    }
+
+    class JetonAcces {
+        +int id
+        +string tokenable_type
+        +int tokenable_id
+        +string name
+        +string token
+        +json abilities
+        +datetime last_used_at
+        +datetime expires_at
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class TokenReinitialisation {
+        +string email PK
+        +string token
+        +datetime created_at
+    }
+
+    class Session {
+        +string id PK
+        +int user_id FK
+        +string ip_address
+        +string user_agent
+        +text payload
+        +int last_activity
+    }
+
+    class Estimation {
+        +int id
+        +int user_id FK
+        +string listing_id
+        +int parent_id FK
+        +string city
+        +float predicted_rent
+        +boolean is_purchased
+        +json form_data
+        +json prediction
+        +json rentability
+        +user() BelongsTo
+    }
+
+    class ControleurAuth {
+        +register(request) JsonResponse
+        +login(request) JsonResponse
+        +logout(request) JsonResponse
+        +me(request) JsonResponse
+        -userResponse(user) array
+    }
+
+    class MiddlewareAdmin {
+        +handle(request, next) Response
+    }
+
+    %% --- Associations (tables / Eloquent) ---
+    Utilisateur "1" --> "*" JetonAcces : possede (Sanctum)
+    Utilisateur "1" --> "*" Session : a
+    Utilisateur "1" --> "*" Estimation : cree
+    Utilisateur ..> TokenReinitialisation : lie par email
+    ControleurAuth ..> Utilisateur : cree / authentifie
+    ControleurAuth ..> JetonAcces : genere / revoque
+    MiddlewareAdmin ..> Utilisateur : verifie role=admin
+
+    %% --- Notes metier ---
+    note for Utilisateur "role : investor | admin\nA l inscription : role = investor\npassword hashe (cast Laravel)"
+    note for JetonAcces "Table personal_access_tokens\nRelation polymorphe tokenable\nNom du token : auth-token"
+    note for TokenReinitialisation "Table password_reset_tokens\nCle primaire = email\nUtilise pour mot de passe oublie"
+    note for ControleurAuth "POST /register\nPOST /login\nPOST /logout (auth)\nGET /me (auth)"

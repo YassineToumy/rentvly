@@ -1,6 +1,10 @@
 <script setup lang="ts">
 definePageMeta({ layout: false })
 
+useHead({
+  title: 'Connexion — Rentvly',
+})
+
 const { login, loading, error, isAuthenticated, user, fetchUser } = useAuth()
 
 const email = ref('')
@@ -25,13 +29,12 @@ async function handleLogin() {
     <!-- Form column -->
     <div class="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-10 py-10">
       <div class="w-full max-w-[420px]">
-        <NuxtLink to="/" class="inline-flex items-center gap-2.5 mb-10">
-          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20">
-            <UIcon name="i-lucide-building-2" class="size-5 text-white" />
-          </div>
-          <span class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Rent<span class="text-primary-500">vly</span>
-          </span>
+        <NuxtLink to="/" class="inline-flex items-center mb-10">
+          <img
+            src="/logo.png"
+            alt="Rentvly"
+            class="h-10 w-auto object-contain"
+          >
         </NuxtLink>
 
         <div class="mb-8">

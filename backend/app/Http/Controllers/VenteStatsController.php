@@ -21,24 +21,24 @@ class VenteStatsController extends Controller
 
         $overview = (clone $base)
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw('COALESCE(AVG(price), 0) as avg_price')
-            ->selectRaw('COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price), 0) as median_price')
-            ->selectRaw('COALESCE(AVG(price_per_sqm), 0) as avg_price_m2')
-            ->selectRaw('COALESCE(AVG(surface_area), 0) as avg_surface')
-            ->selectRaw('COALESCE(AVG(rooms_quantity), 0) as avg_rooms')
-            ->selectRaw('COALESCE(MIN(price), 0) as min_price')
-            ->selectRaw('COALESCE(MAX(price), 0) as max_price')
+            ->selectRaw('COALESCE(AVG(ventes.price), 0) as avg_price')
+            ->selectRaw('COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ventes.price), 0) as median_price')
+            ->selectRaw('COALESCE(AVG(ventes.price_per_sqm), 0) as avg_price_m2')
+            ->selectRaw('COALESCE(AVG(ventes.surface_area), 0) as avg_surface')
+            ->selectRaw('COALESCE(AVG(ventes.rooms_quantity), 0) as avg_rooms')
+            ->selectRaw('COALESCE(MIN(ventes.price), 0) as min_price')
+            ->selectRaw('COALESCE(MAX(ventes.price), 0) as max_price')
             ->first();
 
         $nationalPpm2 = (float) ($overview->avg_price_m2 ?? 0);
         $cities = $this->cityStats($request, $minCity, $nationalPpm2);
 
         $byType = (clone $base)
-            ->select('property_type')
+            ->select('ventes.property_type')
             ->selectRaw('COUNT(*) as listings')
-            ->selectRaw('COALESCE(AVG(price), 0)::int as avg_price')
-            ->selectRaw('COALESCE(AVG(price_per_sqm), 0)::int as avg_price_m2')
-            ->groupBy('property_type')
+            ->selectRaw('COALESCE(AVG(ventes.price), 0)::int as avg_price')
+            ->selectRaw('COALESCE(AVG(ventes.price_per_sqm), 0)::int as avg_price_m2')
+            ->groupBy('ventes.property_type')
             ->orderByDesc('listings')
             ->get();
 
@@ -110,17 +110,18 @@ class VenteStatsController extends Controller
 
     private function filteredQuery(Request $request): Builder
     {
+        // Always qualify ventes.* — joins (departements, regions) also expose code_region.
         return Vente::query()
-            ->when($request->input('type'), fn ($q, $t) => $q->where('property_type', $t))
-            ->when($request->input('region'), fn ($q, $r) => $q->where('code_region', $r))
-            ->when($request->input('department'), fn ($q, $d) => $q->where('department_code', $d))
+            ->when($request->input('type'), fn ($q, $t) => $q->where('ventes.property_type', $t))
+            ->when($request->input('region'), fn ($q, $r) => $q->where('ventes.code_region', $r))
+            ->when($request->input('department'), fn ($q, $d) => $q->where('ventes.department_code', $d))
             ->when($request->input('city'), function ($q, $c) {
-                $q->where('city', 'ilike', trim($c));
+                $q->where('ventes.city', 'ilike', trim($c));
             })
-            ->when($request->filled('min_price'), fn ($q) => $q->where('price', '>=', (int) $request->input('min_price')))
-            ->when($request->filled('max_price'), fn ($q) => $q->where('price', '<=', (int) $request->input('max_price')))
-            ->when($request->filled('min_surface'), fn ($q) => $q->where('surface_area', '>=', (float) $request->input('min_surface')))
-            ->when($request->filled('max_surface'), fn ($q) => $q->where('surface_area', '<=', (float) $request->input('max_surface')));
+            ->when($request->filled('min_price'), fn ($q) => $q->where('ventes.price', '>=', (int) $request->input('min_price')))
+            ->when($request->filled('max_price'), fn ($q) => $q->where('ventes.price', '<=', (int) $request->input('max_price')))
+            ->when($request->filled('min_surface'), fn ($q) => $q->where('ventes.surface_area', '>=', (float) $request->input('min_surface')))
+            ->when($request->filled('max_surface'), fn ($q) => $q->where('ventes.surface_area', '<=', (float) $request->input('max_surface')));
     }
 
     private function filterOptions(Request $request): array
@@ -141,14 +142,14 @@ class VenteStatsController extends Controller
             ]);
 
         $citiesQuery = Vente::query()
-            ->when($request->input('type'), fn ($q, $t) => $q->where('property_type', $t))
-            ->when($request->input('region'), fn ($q, $r) => $q->where('code_region', $r))
-            ->when($request->input('department'), fn ($q, $d) => $q->where('department_code', $d))
-            ->whereNotNull('city')
-            ->where('city', '!=', '')
-            ->selectRaw('MIN(city) as city')
+            ->when($request->input('type'), fn ($q, $t) => $q->where('ventes.property_type', $t))
+            ->when($request->input('region'), fn ($q, $r) => $q->where('ventes.code_region', $r))
+            ->when($request->input('department'), fn ($q, $d) => $q->where('ventes.department_code', $d))
+            ->whereNotNull('ventes.city')
+            ->where('ventes.city', '!=', '')
+            ->selectRaw('MIN(ventes.city) as city')
             ->selectRaw('COUNT(*) as listings')
-            ->groupByRaw('LOWER(TRIM(city))')
+            ->groupByRaw('LOWER(TRIM(ventes.city))')
             ->orderByDesc('listings')
             ->limit(80)
             ->get()
@@ -167,17 +168,17 @@ class VenteStatsController extends Controller
     private function cityStats(Request $request, int $minCity, float $nationalPpm2)
     {
         $rows = $this->filteredQuery($request)
-            ->selectRaw('MIN(city) as city')
+            ->selectRaw('MIN(ventes.city) as city')
             ->selectRaw('COUNT(*) as listings')
-            ->selectRaw('COALESCE(AVG(price), 0)::int as avg_price')
-            ->selectRaw('COALESCE(AVG(price_per_sqm), 0)::int as avg_price_m2')
-            ->selectRaw('COALESCE(AVG(surface_area), 0) as avg_surface')
-            ->selectRaw('MIN(price) as min_price')
-            ->selectRaw('MAX(price) as max_price')
-            ->whereNotNull('city')
-            ->where('city', '!=', '')
-            ->where('price_per_sqm', '>', 0)
-            ->groupByRaw('LOWER(TRIM(city))')
+            ->selectRaw('COALESCE(AVG(ventes.price), 0)::int as avg_price')
+            ->selectRaw('COALESCE(AVG(ventes.price_per_sqm), 0)::int as avg_price_m2')
+            ->selectRaw('COALESCE(AVG(ventes.surface_area), 0) as avg_surface')
+            ->selectRaw('MIN(ventes.price) as min_price')
+            ->selectRaw('MAX(ventes.price) as max_price')
+            ->whereNotNull('ventes.city')
+            ->where('ventes.city', '!=', '')
+            ->where('ventes.price_per_sqm', '>', 0)
+            ->groupByRaw('LOWER(TRIM(ventes.city))')
             ->havingRaw('COUNT(*) >= ?', [$minCity])
             ->get();
 
@@ -205,11 +206,11 @@ class VenteStatsController extends Controller
         $raw = (clone $base)
             ->selectRaw("
                 CASE
-                    WHEN price < 150000 THEN 'under_150'
-                    WHEN price < 250000 THEN '150_250'
-                    WHEN price < 400000 THEN '250_400'
-                    WHEN price < 600000 THEN '400_600'
-                    WHEN price < 1000000 THEN '600_1000'
+                    WHEN ventes.price < 150000 THEN 'under_150'
+                    WHEN ventes.price < 250000 THEN '150_250'
+                    WHEN ventes.price < 400000 THEN '250_400'
+                    WHEN ventes.price < 600000 THEN '400_600'
+                    WHEN ventes.price < 1000000 THEN '600_1000'
                     ELSE 'over_1000'
                 END as bucket
             ")
@@ -235,10 +236,10 @@ class VenteStatsController extends Controller
     private function priceCurve(Builder $base): array
     {
         $rows = (clone $base)
-            ->selectRaw('LEAST((price / 25000) * 25000, 400000) as bucket')
+            ->selectRaw('LEAST((ventes.price / 25000) * 25000, 400000) as bucket')
             ->selectRaw('COUNT(*) as listings')
-            ->selectRaw('COALESCE(AVG(price), 0)::int as avg_price')
-            ->where('price', '>', 0)
+            ->selectRaw('COALESCE(AVG(ventes.price), 0)::int as avg_price')
+            ->where('ventes.price', '>', 0)
             ->groupBy('bucket')
             ->orderBy('bucket')
             ->get();
@@ -260,17 +261,17 @@ class VenteStatsController extends Controller
         $raw = (clone $base)
             ->selectRaw("
                 CASE
-                    WHEN surface_area < 30 THEN 'under_30'
-                    WHEN surface_area < 50 THEN '30_50'
-                    WHEN surface_area < 70 THEN '50_70'
-                    WHEN surface_area < 100 THEN '70_100'
-                    WHEN surface_area < 150 THEN '100_150'
+                    WHEN ventes.surface_area < 30 THEN 'under_30'
+                    WHEN ventes.surface_area < 50 THEN '30_50'
+                    WHEN ventes.surface_area < 70 THEN '50_70'
+                    WHEN ventes.surface_area < 100 THEN '70_100'
+                    WHEN ventes.surface_area < 150 THEN '100_150'
                     ELSE 'over_150'
                 END as bucket
             ")
             ->selectRaw('COUNT(*) as listings')
-            ->selectRaw('COALESCE(AVG(price), 0)::int as avg_price')
-            ->whereNotNull('surface_area')
+            ->selectRaw('COALESCE(AVG(ventes.price), 0)::int as avg_price')
+            ->whereNotNull('ventes.surface_area')
             ->groupBy('bucket')
             ->get()
             ->keyBy('bucket');
@@ -294,11 +295,11 @@ class VenteStatsController extends Controller
     private function roomsDistribution(Builder $base): array
     {
         $raw = (clone $base)
-            ->selectRaw("CASE WHEN rooms_quantity >= 6 THEN 6 ELSE rooms_quantity END as rooms")
+            ->selectRaw("CASE WHEN ventes.rooms_quantity >= 6 THEN 6 ELSE ventes.rooms_quantity END as rooms")
             ->selectRaw('COUNT(*) as listings')
-            ->selectRaw('COALESCE(AVG(price), 0)::int as avg_price')
-            ->whereNotNull('rooms_quantity')
-            ->where('rooms_quantity', '>', 0)
+            ->selectRaw('COALESCE(AVG(ventes.price), 0)::int as avg_price')
+            ->whereNotNull('ventes.rooms_quantity')
+            ->where('ventes.rooms_quantity', '>', 0)
             ->groupBy('rooms')
             ->orderBy('rooms')
             ->get();
@@ -313,11 +314,11 @@ class VenteStatsController extends Controller
     private function timeline(Builder $base): array
     {
         $rows = (clone $base)
-            ->selectRaw("date_trunc('month', COALESCE(publication_date, created_at)) as month")
+            ->selectRaw("date_trunc('month', COALESCE(ventes.publication_date, ventes.created_at)) as month")
             ->selectRaw('COUNT(*) as listings')
-            ->selectRaw('COALESCE(AVG(price), 0)::int as avg_price')
-            ->selectRaw('COALESCE(AVG(price_per_sqm), 0)::int as avg_price_m2')
-            ->whereRaw("COALESCE(publication_date, created_at) >= NOW() - INTERVAL '24 months'")
+            ->selectRaw('COALESCE(AVG(ventes.price), 0)::int as avg_price')
+            ->selectRaw('COALESCE(AVG(ventes.price_per_sqm), 0)::int as avg_price_m2')
+            ->whereRaw("COALESCE(ventes.publication_date, ventes.created_at) >= NOW() - INTERVAL '24 months'")
             ->groupBy('month')
             ->orderBy('month')
             ->get();
