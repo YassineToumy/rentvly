@@ -98,7 +98,7 @@ class VenteController extends Controller
         $validated = $request->validate([
             'title'           => "$req|string|max:500",
             'description'     => 'nullable|string',
-            'property_type'   => "$req|string|max:100",
+            'property_type'   => "$req|in:flat,house",
             'price'           => "$req|integer|min:0",
             'price_per_sqm'   => 'nullable|numeric|min:0',
             'surface_area'    => 'nullable|numeric|min:0',

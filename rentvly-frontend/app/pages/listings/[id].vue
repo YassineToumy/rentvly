@@ -2,8 +2,7 @@
 import { usePrediction } from '../../composables/usePrediction'
 
 const route = useRoute()
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase || 'http://localhost:8080/api/v1'
+const apiBase = useApiBase()
 
 const property = ref<any>(null)
 const loading = ref(true)

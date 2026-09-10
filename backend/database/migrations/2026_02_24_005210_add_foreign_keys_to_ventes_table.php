@@ -22,23 +22,23 @@ return new class extends Migration
             $t->foreign('code_commune')->references('code_commune')->on('communes')->nullOnDelete();
         });
 
-        // Backfill code_region from departments
-        DB::statement("
-            UPDATE ventes v
-            SET code_region = d.code_region
-            FROM departements d
-            WHERE v.department_code = d.code_departement
-            AND v.code_region IS NULL
-        ");
+        if (Schema::getConnection()->getDriverName() === 'pgsql') {
+            DB::statement("
+                UPDATE ventes v
+                SET code_region = d.code_region
+                FROM departements d
+                WHERE v.department_code = d.code_departement
+                AND v.code_region IS NULL
+            ");
 
-        // Backfill code_commune from codes_postaux
-        DB::statement("
-            UPDATE ventes v
-            SET code_commune = cp.code_commune
-            FROM codes_postaux cp
-            WHERE v.postal_code = cp.code_postal
-            AND v.code_commune IS NULL
-        ");
+            DB::statement("
+                UPDATE ventes v
+                SET code_commune = cp.code_commune
+                FROM codes_postaux cp
+                WHERE v.postal_code = cp.code_postal
+                AND v.code_commune IS NULL
+            ");
+        }
     }
 
     public function down(): void

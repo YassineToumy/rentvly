@@ -4,8 +4,7 @@ import type { EstimationDetail } from '../../../composables/useEstimations'
 definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase || 'http://backend.test/api/v1'
+const apiBase = useApiBase()
 const { authHeaders } = useAuth()
 const { deleteEstimation, markAsPurchased, saving } = useEstimations()
 

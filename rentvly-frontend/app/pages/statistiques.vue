@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase || 'http://localhost:8080/api/v1'
+const apiBase = useApiBase()
 
 type CityRow = {
   city: string
@@ -69,24 +68,36 @@ const error = ref<string | null>(null)
 const stats = ref<StatsPayload | null>(null)
 
 const typeItems = [
+  { label: 'Tous les types', value: '' },
   { label: 'Appartements', value: 'flat' },
   { label: 'Maisons', value: 'house' },
 ]
 const priceItems = [
+  { label: 'Tous les prix', value: '' },
   { label: '< 150 000 €', value: 'under150' },
   { label: '150–250 k€', value: '150_250' },
   { label: '250–400 k€', value: '250_400' },
   { label: '> 400 000 €', value: 'over400' },
 ]
 const surfaceItems = [
+  { label: 'Toutes surfaces', value: '' },
   { label: '< 50 m²', value: 'under50' },
   { label: '50–90 m²', value: '50_90' },
   { label: '> 90 m²', value: 'over90' },
 ]
 
-const regionItems = computed(() => stats.value?.filter_options.regions || [])
-const departmentItems = computed(() => stats.value?.filter_options.departments || [])
-const cityItems = computed(() => stats.value?.filter_options.cities || [])
+const regionItems = computed(() => [
+  { label: 'Toute la France', value: '' },
+  ...(stats.value?.filter_options.regions || []),
+])
+const departmentItems = computed(() => [
+  { label: 'Tous les départements', value: '' },
+  ...(stats.value?.filter_options.departments || []),
+])
+const cityItems = computed(() => [
+  { label: 'Toutes les villes', value: '' },
+  ...(stats.value?.filter_options.cities || []),
+])
 
 function priceParams() {
   if (selectedPrice.value === 'under150') return { max_price: '150000' }
@@ -230,49 +241,13 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <StatsFilterSelect
-            v-model="selectedType"
-            label="Type"
-            placeholder="Tous les types"
-            icon="i-lucide-home"
-            :items="typeItems"
-          />
-          <StatsFilterSelect
-            v-model="selectedRegion"
-            label="Région"
-            placeholder="Toute la France"
-            icon="i-lucide-map"
-            :items="regionItems"
-          />
-          <StatsFilterSelect
-            v-model="selectedDepartment"
-            label="Département"
-            placeholder="Tous les départements"
-            icon="i-lucide-map-pinned"
-            :items="departmentItems"
-          />
-          <StatsFilterSelect
-            v-model="selectedCity"
-            label="Ville"
-            placeholder="Toutes les villes"
-            icon="i-lucide-building-2"
-            :items="cityItems"
-          />
-          <StatsFilterSelect
-            v-model="selectedPrice"
-            label="Prix"
-            placeholder="Tous les prix"
-            icon="i-lucide-badge-euro"
-            :items="priceItems"
-          />
-          <StatsFilterSelect
-            v-model="selectedSurface"
-            label="Surface"
-            placeholder="Toutes surfaces"
-            icon="i-lucide-ruler"
-            :items="surfaceItems"
-          />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <USelect v-model="selectedType" :items="typeItems" value-key="value" class="w-full" />
+          <USelect v-model="selectedRegion" :items="regionItems" value-key="value" class="w-full" />
+          <USelect v-model="selectedDepartment" :items="departmentItems" value-key="value" class="w-full" />
+          <USelect v-model="selectedCity" :items="cityItems" value-key="value" class="w-full" />
+          <USelect v-model="selectedPrice" :items="priceItems" value-key="value" class="w-full" />
+          <USelect v-model="selectedSurface" :items="surfaceItems" value-key="value" class="w-full" />
         </div>
         <div class="flex justify-end">
           <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-rotate-ccw" @click="resetFilters">

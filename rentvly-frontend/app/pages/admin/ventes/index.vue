@@ -19,7 +19,7 @@ const saving = ref(false)
 const emptyForm = () => ({
   title: '',
   description: '',
-  property_type: 'apartment',
+  property_type: 'flat',
   price: 0,
   price_per_sqm: null as number | null,
   surface_area: null as number | null,
@@ -37,11 +37,8 @@ const emptyForm = () => ({
 const form = reactive(emptyForm())
 
 const typeOptions = [
-  { label: 'Appartement', value: 'apartment' },
+  { label: 'Appartement', value: 'flat' },
   { label: 'Maison', value: 'house' },
-  { label: 'Terrain', value: 'land' },
-  { label: 'Parking', value: 'parking' },
-  { label: 'Autre', value: 'other' },
 ]
 
 async function load() {
@@ -78,7 +75,7 @@ function openEdit(vente: AdminVente) {
   Object.assign(form, {
     title: vente.title || '',
     description: vente.description || '',
-    property_type: vente.property_type || 'apartment',
+    property_type: vente.property_type === 'house' ? 'house' : 'flat',
     price: vente.price || 0,
     price_per_sqm: vente.price_per_sqm ?? null,
     surface_area: vente.surface_area ?? null,

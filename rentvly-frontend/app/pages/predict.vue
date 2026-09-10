@@ -85,7 +85,7 @@ async function handleSave() {
 
   if (saved) {
     saveSuccess.value = true
-    await navigateTo(`/dashboard/estimations/${saved.id}`)
+    await navigateTo(`/dashboard/estimations/${saved.data.id}`)
   }
 }
 

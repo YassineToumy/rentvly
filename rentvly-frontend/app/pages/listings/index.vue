@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase || 'http://localhost:8080/api/v1'
+const apiBase = useApiBase()
 const route = useRoute()
 
 const properties = ref<any[]>([])
@@ -154,14 +153,14 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
           v-for="p in properties"
           :key="p.id"
           :to="`/listings/${p.id}`"
-          class="group flex flex-col sm:flex-row sm:h-44 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer no-underline"
+          class="group flex flex-col sm:flex-row rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:border-gray-300 dark:hover:border-gray-300 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer no-underline"
         >
           <!-- Image -->
-          <div class="relative w-full sm:w-52 h-44 sm:h-full flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800">
+          <div class="relative w-full sm:w-56 h-44 sm:h-auto flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800">
             <img
               :src="p.image || fallbackImage"
               :alt="p.title"
-              class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
               @error="($event.target as HTMLImageElement).src = fallbackImage"
             />
@@ -176,8 +175,8 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
           </div>
 
           <!-- Content -->
-          <div class="flex-1 p-4 sm:p-5 flex flex-col justify-between min-w-0 min-h-0 overflow-hidden">
-            <div class="min-w-0 overflow-hidden">
+          <div class="flex-1 p-4 sm:p-5 flex flex-col justify-between min-w-0">
+            <div>
               <div class="flex items-start justify-between gap-3 mb-2">
                 <div class="min-w-0">
                   <h3 class="text-sm font-semibold text-black dark:text-white leading-snug group-hover:underline underline-offset-2 truncate">{{ p.title }}</h3>
@@ -187,33 +186,33 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
                   </div>
                 </div>
                 <div class="text-right flex-shrink-0">
-                  <p class="text-lg font-bold text-black dark:text-white whitespace-nowrap">{{ formatPrice(p.price) }}</p>
-                  <p v-if="p.price_per_sqm" class="text-[11px] text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ Math.round(p.price_per_sqm) }} €/m²</p>
+                  <p class="text-lg font-bold text-black dark:text-white">{{ formatPrice(p.price) }}</p>
+                  <p v-if="p.price_per_sqm" class="text-[11px] text-gray-600 dark:text-gray-400">{{ Math.round(p.price_per_sqm) }} €/m²</p>
                 </div>
               </div>
 
-              <div class="flex flex-nowrap items-center gap-3 text-xs text-gray-600 dark:text-gray-500 dark:text-gray-400 mt-3 overflow-hidden">
-                <span class="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 shrink-0">{{ typeLabel(p.property_type) }}</span>
-                <div v-if="p.surface_area" class="flex items-center gap-1 shrink-0">
+              <div class="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-500 dark:text-gray-400 mt-3">
+                <span class="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800">{{ typeLabel(p.property_type) }}</span>
+                <div v-if="p.surface_area" class="flex items-center gap-1">
                   <UIcon name="i-lucide-ruler" class="size-3.5" />
                   <span>{{ p.surface_area }} m²</span>
                 </div>
-                <div v-if="p.rooms_quantity" class="flex items-center gap-1 shrink-0">
+                <div v-if="p.rooms_quantity" class="flex items-center gap-1">
                   <UIcon name="i-lucide-layout-grid" class="size-3.5" />
                   <span>{{ p.rooms_quantity }} pièce{{ p.rooms_quantity > 1 ? 's' : '' }}</span>
                 </div>
-                <div v-if="p.has_elevator" class="flex items-center gap-1 shrink-0">
+                <div v-if="p.has_elevator" class="flex items-center gap-1">
                   <UIcon name="i-lucide-arrow-up-down" class="size-3.5" />
                   <span>Ascenseur</span>
                 </div>
-                <div v-if="p.has_parking" class="flex items-center gap-1 shrink-0">
+                <div v-if="p.has_parking" class="flex items-center gap-1">
                   <UIcon name="i-lucide-car" class="size-3.5" />
                   <span>Parking</span>
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 shrink-0">
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
               <span v-if="p.owner_name" class="text-xs text-gray-600 dark:text-gray-400 truncate mr-3">{{ p.owner_name }}</span>
               <div v-else />
               <div class="flex gap-2 flex-shrink-0">
