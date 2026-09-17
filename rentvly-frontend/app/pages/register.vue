@@ -93,11 +93,11 @@ async function handleRegister() {
     <!-- Form column -->
     <div class="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-10 py-10">
       <div class="w-full max-w-[420px]">
-        <NuxtLink to="/" class="inline-flex items-center mb-10">
+        <NuxtLink to="/" class="mb-14 flex justify-center">
           <img
             src="/logo.png"
             alt="Rentvly"
-            class="h-10 w-auto object-contain"
+            class="h-18 sm:h-20 w-auto object-contain"
           >
         </NuxtLink>
 

@@ -29,11 +29,11 @@ async function handleLogin() {
     <!-- Form column -->
     <div class="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-10 py-10">
       <div class="w-full max-w-[420px]">
-        <NuxtLink to="/" class="inline-flex items-center mb-10">
+        <NuxtLink to="/" class="mb-14 flex justify-center">
           <img
             src="/logo.png"
             alt="Rentvly"
-            class="h-10 w-auto object-contain"
+            class="h-18 sm:h-20 w-auto object-contain"
           >
         </NuxtLink>
 
@@ -131,7 +131,7 @@ async function handleLogin() {
         <div class="mt-10 grid grid-cols-2 gap-3">
           <div class="h-20 p-4 rounded-xl bg-white/5 border border-white/10 text-left flex flex-col justify-center">
             <p class="text-xs text-slate-400">Précision</p>
-            <p class="text-lg font-bold text-primary-400">87%</p>
+            <p class="text-lg font-bold text-primary-400">plus que 87%</p>
           </div>
           <div class="h-20 p-4 rounded-xl bg-white/5 border border-white/10 text-left flex flex-col justify-center">
             <p class="text-xs text-slate-400">Annonces</p>
