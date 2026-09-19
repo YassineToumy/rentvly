@@ -69,8 +69,7 @@ type PageMeta = {
 }
 
 export function useAdmin() {
-  const config = useRuntimeConfig()
-  const apiBase = config.public.apiBase || 'http://backend.test/api/v1'
+  const apiBase = useApiBase()
   const { authHeaders } = useAuth()
 
   const loading = ref(false)

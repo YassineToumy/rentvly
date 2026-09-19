@@ -41,7 +41,11 @@ load_dotenv()
 
 MODEL_PATH = os.getenv("MODEL_PATH", "model.cbm")
 META_PATH = os.getenv("METADATA_PATH", os.getenv("META_PATH", "model_metadata.json"))
-MONGO_URI = os.getenv("MONGODB_URI", os.getenv("MONGO_URI", "mongodb://root:root@72.60.215.111:27019"))
+MONGO_URI = os.getenv("MONGODB_URI") or os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise SystemExit(
+        "MONGODB_URI (or MONGO_URI) is required. Copy api-python/.env.example to .env."
+    )
 MONGO_DB = os.getenv("MONGODB_DATABASE", os.getenv("MONGO_DATABASE", "bienici"))
 MONGO_COLLECTION = os.getenv(
     "MONGO_LOCATIONS_COLLECTION",

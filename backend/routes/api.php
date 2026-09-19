@@ -18,15 +18,15 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
 
     // ── Public ──
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
     Route::get('/ventes', [VenteController::class, 'index']);
     Route::get('/ventes/stats', [\App\Http\Controllers\VenteStatsController::class, 'index']);
     Route::get('/ventes/{id}', [VenteController::class, 'show']);
 
-    Route::post('/predict', [PredictionController::class, 'predict']);
-    Route::post('/rentability', [PredictionController::class, 'rentability']);
+    Route::post('/predict', [PredictionController::class, 'predict'])->middleware('throttle:20,1');
+    Route::post('/rentability', [PredictionController::class, 'rentability'])->middleware('throttle:20,1');
 
     // ── Protected (requires token) ──
     Route::middleware('auth:sanctum')->group(function () {

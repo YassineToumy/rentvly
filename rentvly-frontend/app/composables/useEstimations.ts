@@ -83,8 +83,7 @@ export interface SaveEstimationResult {
 }
 
 export function useEstimations() {
-  const config = useRuntimeConfig()
-  const apiBase = config.public.apiBase || 'http://backend.test/api/v1'
+  const apiBase = useApiBase()
   const { authHeaders, isAuthenticated } = useAuth()
 
   const loading = ref(false)

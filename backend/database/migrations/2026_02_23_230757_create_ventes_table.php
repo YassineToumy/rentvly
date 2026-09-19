@@ -72,9 +72,11 @@ return new class extends Migration
             $t->index(['department_code', 'property_type', 'price']);
         });
 
-        DB::statement('CREATE INDEX ventes_interior_gin ON ventes USING GIN (interior_features)');
-        DB::statement('CREATE INDEX ventes_exterior_gin ON ventes USING GIN (exterior_features)');
-        DB::statement('CREATE INDEX ventes_other_gin ON ventes USING GIN (other_features)');
+        if (Schema::getConnection()->getDriverName() === 'pgsql') {
+            DB::statement('CREATE INDEX ventes_interior_gin ON ventes USING GIN (interior_features)');
+            DB::statement('CREATE INDEX ventes_exterior_gin ON ventes USING GIN (exterior_features)');
+            DB::statement('CREATE INDEX ventes_other_gin ON ventes USING GIN (other_features)');
+        }
     }
 
     public function down(): void

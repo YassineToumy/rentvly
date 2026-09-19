@@ -10,8 +10,7 @@ const user = ref<User | null>(null)
 const token = ref<string | null>(null)
 
 export function useAuth() {
-  const config = useRuntimeConfig()
-  const apiBase = config.public.apiBase || 'http://localhost:8080/api/v1'
+  const apiBase = useApiBase()
   const loading = ref(false)
   const error = ref<string | null>(null)
 

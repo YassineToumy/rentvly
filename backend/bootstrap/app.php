@@ -44,10 +44,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
             $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
 
-            return response()->json([
+            $payload = [
                 'success' => false,
                 'message' => $message,
-                'exception' => class_basename($e),
-            ], is_int($status) && $status >= 400 ? $status : 500);
+            ];
+            if (config('app.debug')) {
+                $payload['exception'] = class_basename($e);
+            }
+
+            return response()->json($payload, is_int($status) && $status >= 400 ? $status : 500);
         });
     })->create();

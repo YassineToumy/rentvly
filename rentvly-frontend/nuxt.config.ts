@@ -11,12 +11,7 @@ export default defineNuxtConfig({
   css: ['@/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://backend.test/api/v1',
-    },
-  },
-  app: {
-    head: {
-      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico', key: 'favicon' }],
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080/api/v1',
     },
   },
 })

@@ -14,6 +14,12 @@ class ImportVentesFromMongo extends Command
     /** @var array<string, bool> */
     private array $validDepartments = [];
 
+    /** @var array<string, string> */
+    private array $departmentRegions = [];
+
+    /** @var array<string, bool> */
+    private array $validCommunes = [];
+
     public function handle(): int
     {
         $chunk = (int) $this->option('chunk');
@@ -42,6 +48,13 @@ class ImportVentesFromMongo extends Command
 
         $this->validDepartments = array_fill_keys(
             DB::table('departements')->pluck('code_departement')->all(),
+            true
+        );
+        $this->departmentRegions = DB::table('departements')
+            ->pluck('code_region', 'code_departement')
+            ->all();
+        $this->validCommunes = array_fill_keys(
+            DB::table('communes')->pluck('code_commune')->all(),
             true
         );
 
@@ -155,8 +168,10 @@ class ImportVentesFromMongo extends Command
             'city'                => mb_substr($this->stringVal($doc['city'] ?? '') ?? '', 0, 255),
             'postal_code'         => $postal ?: '00000',
             'department_code'     => $department,
+            'code_region'         => $this->departmentRegions[$department] ?? null,
             'district_name'       => $this->stringVal($doc['district_name'] ?? null),
             'code_insee'          => $this->insee($doc['code_insee'] ?? null),
+            'code_commune'        => $this->communeCode($doc['code_insee'] ?? null),
             'latitude'            => $this->floatVal($doc['latitude'] ?? null),
             'longitude'           => $this->floatVal($doc['longitude'] ?? null),
 
@@ -246,7 +261,17 @@ class ImportVentesFromMongo extends Command
             }
         }
 
-        return array_key_first($this->validDepartments);
+        return null;
+    }
+
+    private function communeCode(mixed $insee): ?string
+    {
+        $code = $this->insee($insee);
+        if ($code === null || !isset($this->validCommunes[$code])) {
+            return null;
+        }
+
+        return $code;
     }
 
     private function insee(mixed $value): ?string
