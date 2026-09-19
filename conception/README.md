@@ -7,6 +7,7 @@ Artefacts de conception du projet (diagrammes UML, etc.).
 ```
 conception/
 ├── README.md
+├── backlog.tex
 ├── scripts/
 │   └── embed-acteur.mjs
 └── uml/
@@ -27,6 +28,15 @@ conception/
 | [`05-sequence-login.mmd`](./uml/05-sequence-login.mmd) | Séquence login : classique + mot de passe oublié + Google |
 | [`06-sequence-register.mmd`](./uml/06-sequence-register.mmd) | Séquence register : formulaire + 2FA e-mail + Google |
 | [`08-class-authentification.mmd`](./uml/08-class-authentification.mmd) | Classes auth (User, Sanctum, reset, session, contrôleur) |
+| [`backlog.tex`](./backlog.tex) | Backlog produit (user stories, fragment LaTeX) |
+
+## Backlog LaTeX
+
+Fragment à intégrer dans le rapport (pas un document autonome) :
+
+```latex
+\input{figures/backlog}   % ou le chemin adapté dans ton projet Overleaf
+```
 
 ## Rendu / Overleaf (impression)
 
