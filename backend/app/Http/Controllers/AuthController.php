@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -106,6 +108,71 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'data'    => $this->userResponse($request->user()),
+        ]);
+    }
+
+    /**
+     * PATCH /api/v1/me/email
+     */
+    public function updateEmail(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->ignore($request->user()->id),
+            ],
+            'current_password' => 'required|string',
+        ], [
+            'email.required' => "L'email est obligatoire.",
+            'email.email'    => "L'email n'est pas valide.",
+            'email.unique'   => 'Cet email est déjà utilisé.',
+            'current_password.required' => 'Le mot de passe actuel est obligatoire.',
+        ]);
+
+        if (! Hash::check($validated['current_password'], $request->user()->password)) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Mot de passe actuel incorrect.',
+            ], 422);
+        }
+
+        $request->user()->update(['email' => $validated['email']]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $this->userResponse($request->user()->fresh()),
+            'message' => 'Email mis à jour.',
+        ]);
+    }
+
+    /**
+     * PATCH /api/v1/me/password
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password'         => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'current_password.required' => 'Le mot de passe actuel est obligatoire.',
+            'password.required'         => 'Le nouveau mot de passe est obligatoire.',
+            'password.confirmed'        => 'Les mots de passe ne correspondent pas.',
+            'password.min'              => 'Le mot de passe doit contenir au moins 8 caractères.',
+        ]);
+
+        if (! Hash::check($validated['current_password'], $request->user()->password)) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Mot de passe actuel incorrect.',
+            ], 422);
+        }
+
+        $request->user()->update(['password' => $validated['password']]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mot de passe mis à jour.',
         ]);
     }
 

@@ -1,8 +1,6 @@
-%% Diagramme de séquence — Tableau de bord investisseur
-%% et gestion des investissements (Rentvly)
-%% Optimisé impression / Overleaf (contraste élevé, gros texte, labels courts)
-%% Export conseillé :
-%% npx @mermaid-js/mermaid-cli -i conception/uml/07-sequence-dashboard-investisseur.mmd -o conception/uml/07-sequence-dashboard-investisseur.png -b white -s 3 -w 2400 -C conception/uml/sequence-print.css
+%% Diagramme de séquence — Tableau de bord investisseur (version condensée)
+%% Token Sanctum requis ; erreurs (401 / 422) omises pour la lisibilité
+%% Export : mermaid-cli + sequence-print.css (texte gras)
 
 %%{init: {
   'theme': 'base',
@@ -38,16 +36,16 @@
   'themeCSS': 'text, tspan, .actor, .messageText, .noteText, .loopText, .labelText, .sequenceNumber { font-weight: 700 !important; font-family: Arial, Helvetica, sans-serif !important; }',
   'sequence': {
     'diagramMarginX': 40,
-    'diagramMarginY': 20,
+    'diagramMarginY': 16,
     'actorMargin': 90,
     'width': 200,
-    'height': 62,
-    'boxMargin': 14,
-    'boxTextMargin': 10,
-    'noteMargin': 14,
-    'messageMargin': 52,
+    'height': 58,
+    'boxMargin': 10,
+    'boxTextMargin': 8,
+    'noteMargin': 10,
+    'messageMargin': 38,
     'mirrorActors': false,
-    'bottomMarginAdj': 10,
+    'bottomMarginAdj': 8,
     'useMaxWidth': false,
     'rightAngles': false,
     'showSequenceNumbers': false
@@ -60,67 +58,38 @@ sequenceDiagram
     participant W as Serveur
     participant D as Base de données
 
-    Note over C,S: Token Sanctum requis
+    Note over C,W: Token Sanctum (sinon redirection /login)
 
-    alt Accéder au tableau de bord
-        C->>+S: Ouvre /dashboard
-        S->>S: Vérifie le token
-        alt Token absent
-            S-->>C: Redirige /login
-        else Token présent
-            S->>+W: GET /estimations
-            W->>W: Vérifie Sanctum
-            W->>+D: Charge estimations (racines)
-            D-->>-W: liste
-            W->>W: Calcule stats + ROI achetés
-            W-->>-S: stats + estimations
-            S-->>-C: Affiche le dashboard
-        end
+    alt Tableau de bord
+        C->>S: Ouvre /dashboard
+        S->>W: GET /estimations
+        W->>D: Estimations + stats
+        D-->>W: liste
+        W-->>S: stats + ROI
+        S-->>C: Affiche le dashboard
 
-    else Consulter une estimation
-        C->>+S: Ouvre /dashboard/estimations/{id}
-        S->>+W: GET /estimations/{id}
-        W->>W: Vérifie le propriétaire
-        W->>+D: Charge estimation + variantes
-        D-->>-W: détail
-        opt Bien marqué acheté
-            W->>W: Calcule projections ROI
-            Note over W: 1 / 10 / 20 ans
-        end
-        W-->>-S: estimation (+ ROI)
-        S-->>-C: Affiche la fiche
+    else Consulter une fiche
+        C->>S: Ouvre /estimations/{id}
+        S->>W: GET /estimations/{id}
+        W->>D: Détail + variantes
+        D-->>W: estimation
+        W-->>S: fiche (+ ROI si acheté)
+        S-->>C: Affiche la fiche
 
-    else Marquer comme acheté
-        C->>+S: Clique « Marquer acheté »
-        S->>+W: PATCH /estimations/{id}
-        Note over S,W: is_purchased = true
-        W->>W: Prix d'achat présent ?
-        alt Prix manquant
-            W-->>S: 422 erreur
-            S-->>C: « Prix d'achat requis »
-        else Prix OK
-            W->>+D: MAJ statut + date d'achat
-            D-->>-W: OK
-            W->>W: Calcule projections ROI
-            W-->>-S: estimation + ROI
-            S-->>-C: Affiche statut acheté
-        end
+    else Gérer l'investissement
+        C->>S: Marquer / retirer acheté
+        S->>W: PATCH /estimations/{id}
+        Note over W,D: Prix d'achat requis pour marquer acheté
+        W->>D: MAJ is_purchased
+        D-->>W: OK
+        W-->>S: fiche + ROI
+        S-->>C: Met à jour l'affichage
 
-    else Retirer le statut acheté
-        C->>+S: Clique « Retirer »
-        S->>+W: PATCH /estimations/{id}
-        Note over S,W: is_purchased = false
-        W->>+D: MAJ statut (date nulle)
-        D-->>-W: OK
-        W-->>-S: estimation
-        S-->>-C: Affiche statut retiré
-
-    else Supprimer une estimation
-        C->>+S: Clique « Supprimer »
-        S->>+W: DELETE /estimations/{id}
-        W->>W: Vérifie le propriétaire
-        W->>+D: Supprime estimation
-        D-->>-W: OK
-        W-->>-S: succès
-        S-->>-C: Retour /dashboard
+    else Supprimer
+        C->>S: Supprimer l'estimation
+        S->>W: DELETE /estimations/{id}
+        W->>D: Suppression
+        D-->>W: OK
+        W-->>S: succès
+        S-->>C: Retour /dashboard
     end

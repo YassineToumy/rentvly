@@ -32,6 +32,8 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
+        Route::patch('/me/email', [AuthController::class, 'updateEmail'])->middleware('throttle:10,1');
+        Route::patch('/me/password', [AuthController::class, 'updatePassword'])->middleware('throttle:10,1');
 
         Route::get('/estimations', [EstimationController::class, 'index']);
         Route::get('/estimations/by-listing/{listingId}', [EstimationController::class, 'byListing']);
