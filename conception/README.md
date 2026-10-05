@@ -17,7 +17,9 @@ conception/
     ├── 05-sequence-login.mmd / .svg / .png
     ├── 06-sequence-register.mmd / .svg / .png
     ├── 07-sequence-dashboard-investisseur.mmd / .svg / .png
-    └── 08-class-authentification.mmd / .svg / .png
+    ├── 08-class-authentification.mmd / .svg / .png
+    ├── 09-class-analyse.mmd / .svg / .png
+    └── 10-class-annonces.mmd / .svg / .png
 ```
 
 ## Diagrammes
@@ -28,9 +30,11 @@ conception/
 | [`03-use-case-investisseur.mmd`](./uml/03-use-case-investisseur.mmd) | Dashboard, estimations, achat, ROI, compte |
 | [`05-sequence-login.mmd`](./uml/05-sequence-login.mmd) | Séquence login : classique + mot de passe oublié + Google |
 | [`06-sequence-register.mmd`](./uml/06-sequence-register.mmd) | Séquence register : formulaire + 2FA e-mail + Google |
-| [`07-sequence-dashboard-investisseur.mmd`](./uml/07-sequence-dashboard-investisseur.mmd) | Séquence dashboard : accès, consultation, achat, ROI, suppression |
-| [`08-class-authentification.mmd`](./uml/08-class-authentification.mmd) | Classes auth (User, Sanctum, reset, session, contrôleur) |
-| [`backlog.tex`](./backlog.tex) | Backlog produit (user stories, fragment LaTeX) |
+| [`07-sequence-dashboard-investisseur.mmd`](./uml/07-sequence-dashboard-investisseur.mmd) | Séquence fusionnée : annonces + dashboard (API backend uniquement) |
+| [`08-class-authentification.mmd`](./uml/08-class-authentification.mmd) | Classes auth (compact, liens) |
+| [`09-class-analyse.mmd`](./uml/09-class-analyse.mmd) | Classes d'analyse métier (User, Estimation, Vente, géo) |
+| [`10-class-annonces.mmd`](./uml/10-class-annonces.mmd) | Classes conception sprint 2 — gestion des annonces |
+| [`backlog.tex`](./backlog.tex) | Backlog produit par sprints (annonces + dashboard fusionnés) |
 
 ## Backlog LaTeX
 
@@ -55,10 +59,15 @@ Préférer **PNG** ou **PDF** (exporté depuis SVG) :
 Régénérer :
 
 ```bash
-npx @mermaid-js/mermaid-cli -i conception/uml/08-class-authentification.mmd -o conception/uml/08-class-authentification.svg -b white -w 2200
-npx @mermaid-js/mermaid-cli -i conception/uml/08-class-authentification.mmd -o conception/uml/08-class-authentification.png -b white -s 3 -w 2200
-npx @mermaid-js/mermaid-cli -i conception/uml/07-sequence-dashboard-investisseur.mmd -o conception/uml/07-sequence-dashboard-investisseur.svg -b white -w 2400 -C conception/uml/sequence-print.css
-npx @mermaid-js/mermaid-cli -i conception/uml/07-sequence-dashboard-investisseur.mmd -o conception/uml/07-sequence-dashboard-investisseur.png -b white -s 3 -w 2400 -C conception/uml/sequence-print.css
+npx @mermaid-js/mermaid-cli -i conception/uml/08-class-authentification.mmd -o conception/uml/08-class-authentification.svg -b white --size 2200
+npx @mermaid-js/mermaid-cli -i conception/uml/08-class-authentification.mmd -o conception/uml/08-class-authentification.png -b white -s 3 --size 2200
+npx @mermaid-js/mermaid-cli -i conception/uml/09-class-analyse.mmd -o conception/uml/09-class-analyse.svg -b white --size 2400
+npx @mermaid-js/mermaid-cli -i conception/uml/09-class-analyse.mmd -o conception/uml/09-class-analyse.png -b white -s 3 --size 2400
+npx @mermaid-js/mermaid-cli -i conception/uml/10-class-annonces.mmd -o conception/uml/10-class-annonces.svg -b white --size 2200
+npx @mermaid-js/mermaid-cli -i conception/uml/10-class-annonces.mmd -o conception/uml/10-class-annonces.png -b white -s 3 --size 2200
+npx @mermaid-js/mermaid-cli -i conception/uml/05-sequence-login.mmd -o conception/uml/05-sequence-login.png -b white -s 3 --size 2600 -C conception/uml/sequence-print.css
+npx @mermaid-js/mermaid-cli -i conception/uml/06-sequence-register.mmd -o conception/uml/06-sequence-register.png -b white -s 3 --size 2600 -C conception/uml/sequence-print.css
+npx @mermaid-js/mermaid-cli -i conception/uml/07-sequence-dashboard-investisseur.mmd -o conception/uml/07-sequence-dashboard-investisseur.png -b white -s 3 --size 2600 -C conception/uml/sequence-print.css
 ```
 
 Les acteurs des use cases utilisent `acteur.png` embarqué en **base64**. Si vous modifiez l'image :

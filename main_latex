@@ -1,0 +1,1347 @@
+% !TEX program = lualatex
+\documentclass[12pt, a4paper]{report}
+
+% ==================================================
+% PACKAGES
+% ==================================================
+
+% Graphiques et figures
+\usepackage{graphicx}
+\graphicspath{{images/}{devtools/}{diag/}{./}}
+\usepackage{float}
+
+\newcommand{\projectimage}[1]{%
+    \includegraphics[width=0.9\linewidth,height=0.7\textheight,keepaspectratio]{#1}%
+}
+
+
+%tools images
+\newcommand{\techitem}[3]{%
+    \noindent
+    \begin{minipage}[c]{0.13\linewidth}
+        \centering
+        \includegraphics[width=0.75\linewidth]{#1}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[c]{0.84\linewidth}
+        #2 — #3
+    \end{minipage}
+    \vspace{0.5cm}
+    \par
+}
+
+% Mathématiques
+\usepackage{amsmath}
+\usepackage{longtable}
+\usepackage{array}
+% ==================================================
+% LANGUES ET TYPOGRAPHIE
+% ==================================================
+\usepackage{amssymb}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+
+\setmainlanguage{french}
+\setotherlanguage{arabic}
+
+% Police arabe : Amiri si disponible, sinon Segoe UI (Windows)
+\IfFontExistsTF{Amiri}{%
+    \newfontfamily\arabicfont[Script=Arabic,Scale=1.15]{Amiri}%
+}{%
+    \newfontfamily\arabicfont[Script=Arabic,Scale=1.15]{Segoe UI}%
+}
+
+% ==================================================
+% MISE EN PAGE
+% ==================================================
+
+\usepackage{geometry}
+\geometry{margin=1.75cm}
+
+\usepackage{setspace}
+\doublespacing
+
+\usepackage{enumitem}
+
+% ==================================================
+% AUTRES PACKAGES
+% ==================================================
+
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+% ==================================================
+% DOCUMENT
+% ==================================================
+
+\begin{document}
+
+% ==================================================
+% PAGE DE GARDE
+% ==================================================
+
+\hypersetup{pageanchor=false}
+\includepdf[pages=1]{images/Page_de_Garde_GLSI3.pdf}
+\includepdf[pages=2]{images/Page_de_Garde_GLSI3.pdf}
+
+\clearpage
+\pagenumbering{roman}
+\hypersetup{pageanchor=true}
+
+
+
+
+% ==================================================
+% TABLE DES MATIÈRES
+% ==================================================
+
+\clearpage
+
+\tableofcontents
+\clearpage
+
+\phantomsection
+\renewcommand{\listfigurename}{Liste des figures}
+\listoffigures
+\clearpage
+
+\phantomsection
+\listoftables
+\clearpage
+% ==================================================
+% REMERCIEMENTS
+% ==================================================
+
+\addcontentsline{toc}{chapter}{Remerciements}
+% ==================================================
+% FORMULE RELIGIEUSE
+% ==================================================
+
+\begin{center}
+\begin{arabic}
+
+{\Large
+بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+\par
+}
+
+\vspace{0.2cm}
+
+{\large
+وَالصَّلَاةُ وَالسَّلَامُ عَلَى أَشْرَفِ الْمُرْسَلِينَ،
+سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِهِ وَصَحْبِهِ أَجْمَعِينَ
+\par
+}
+
+\end{arabic}
+\end{center}
+\vspace{0.5cm}
+
+
+\noindent
+Au terme de ce travail, je tiens à exprimer ma profonde gratitude à toutes les personnes qui ont contribué, de près ou de loin, à la réussite de ce projet ainsi qu'à l'accomplissement de mon parcours universitaire.
+
+Je tiens tout d'abord à adresser mes sincères remerciements à mes encadrants pour leur disponibilité, leurs précieux conseils, leur accompagnement et la confiance qu'ils m'ont accordée tout au long de la réalisation de ce projet de fin d'études.
+
+J'adresse également mes remerciements à l'ensemble de mes enseignants et professeurs qui m'ont accompagné durant mes années de licence. Grâce à leurs enseignements,j'ai pu développer les compétences nécessaires pour mon parcours professionnelle.
+
+Je souhaite exprimer une reconnaissance toute particulière à toute l'équipe de Cercina pour cette aventure enrichissante. Cette expérience m'a permis d'évoluer dans un environnement professionnel stimulant.
+
+Mes remerciements les plus sincères vont également à ma famille, pour son soutien inconditionnel, sa patience, ses encouragements et les sacrifices consentis tout au long de mon parcours.
+
+Enfin, je remercie chaleureusement mes amis, mes collègues et toutes les personnes qui m'ont soutenu, conseillé ou encouragé au cours de mon parcours universitaire.
+
+\vspace{0.5cm}
+
+\begin{flushright}
+\textit{Avec toute notre reconnaissance.}
+\end{flushright}
+% ==================================================
+% LISTE DES ABRÉVIATIONS
+% ==================================================
+
+\addcontentsline{toc}{chapter}{Liste des abréviations}
+
+\begin{tabular}{ll}
+API & Application Programming Interface \\
+BDD & Base de données \\
+CSS & Cascading Style Sheets \\
+ML & Machine Learning \\
+REST & Representational State Transfer \\
+UML & Unified Modeling Language \\
+UI & User Interface \\
+UX & User Experience \\
+AI & Intélligence Artificielle \\
+MAE & Mean Absolute Error  \\
+MSE & Mean Squared Error  \\
+RMSE & Root Mean Squared Error   \\
+$R^2$ & Coefficient de détermination \\
+\end{tabular}
+
+\newpage
+
+% ==================================================
+% INTRODUCTION GÉNÉRALE
+% ==================================================
+
+\pagenumbering{arabic}
+
+\addcontentsline{toc}{chapter}{Introduction générale}
+
+Dans le cadre de notre projet de fin d’études, réalisé en vue de l’obtention du diplôme de Licence en Sciences Informatiques, nous avons eu l’opportunité de concevoir et de développer une solution logicielle répondant à une problématique réelle dans le domaine de l’immobilier. Ce projet a été réalisé au sein de Cercina Studio, dans un environnement professionnel orienté vers le développement de solutions numériques et l’intégration de nouvelles technologies.
+
+Au cours des dernières années, le secteur immobilier a connu une transformation digitale importante grâce à l’évolution des technologies web et de l’intelligence artificielle. Malgré cette évolution, l’analyse du potentiel d’un investissement immobilier reste une tâche complexe, notamment en raison du nombre de paramètres à prendre en considération, tels que le prix du bien, son emplacement, son potentiel locatif, les charges et les différents indicateurs de rentabilité. Les investisseurs peuvent ainsi rencontrer des difficultés à obtenir une vision claire et objective du potentiel d’un bien avant de prendre une décision.
+
+Dans ce contexte, notre projet consiste à concevoir et développer Rentvly, une plateforme web intelligente dédiée à l’analyse du potentiel d’investissement immobilier et à l’évaluation de la rentabilité locative. La solution intègre des fonctionnalités d’analyse et d’intelligence artificielle permettant notamment d’estimer les prix de location et de fournir différents indicateurs clés de performance (KPI) afin d’aider les investisseurs à mieux évaluer les opportunités immobilières.
+
+L’objectif principal du projet est donc de proposer une solution complète, intuitive et évolutive permettant de faciliter l’analyse des biens immobiliers et d’accompagner les investisseurs dans leur prise de décision. La réalisation de cette solution repose sur la conception de l’architecture du système, le développement des différentes fonctionnalités de la plateforme, l’intégration de l’intelligence artificielle ainsi que les phases de test et de déploiement.
+
+Le développement du projet a été organisé selon une approche Agile basée sur Scrum, permettant de structurer progressivement les différentes étapes de réalisation. Le projet a été réparti en quatre sprints. Le Sprint 1 est dédié à la mise en place du système d’authentification et à la gestion des comptes utilisateurs. Le Sprint 2 regroupe la consultation des annonces immobilières et l’espace investisseur, afin de relier l’exploration du marché à l’analyse et au suivi des investissements. Le Sprint 3 est dédié au développement et à l’évaluation du modèle d’intelligence artificielle destiné à la prédiction des prix de location. Enfin, le Sprint 4 concerne la mise en place de l’espace d’administration permettant d’assurer la gestion globale de la plateforme.
+
+Ce mémoire présente ainsi les différentes étapes de réalisation du projet, depuis l’étude du contexte et des besoins jusqu’à la conception, au développement et à l’intégration des différentes fonctionnalités de Rentvly. Chaque partie du mémoire permet de présenter l’évolution de la solution et les choix effectués au cours de sa réalisation.
+
+
+% ==================================================
+% CHAPITRE 1 : ANALYSE GÉNÉRALE ET ÉTUDE DE L’EXISTANT
+% ==================================================
+
+\chapter{Étude préalable}
+
+% ==================================================
+\section*{Introduction}
+
+Ce chapitre présente l'étude préalable du projet. Il permet de situer le contexte général et l'organisme d'accueil, d'analyser l'existant afin d'en dégager les limites, d'identifier les besoins fonctionnels du système, et de définir la méthodologie ainsi que la planification adoptées pour la conduite du projet.
+
+% ==================================================
+\section{Contexte général du projet}
+\subsection{Présentation de l’organisme d’accueil}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.3\textwidth}
+        \centering
+        \includegraphics[width=0.8\textwidth]{images/logo-cercina.jpg}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.65\textwidth}
+        \raggedright
+        \textbf{Nom de l'entreprise :} Cercina Studio \cite{cercina}
+
+        \textbf{Année :} 2023 
+
+        \textbf{Domaines :} Entrepreneuriat, Développement, PropTech, Startup Studio
+
+        \textbf{Présentation :} Cercina est un startup studio basé en Tunisie, entièrement dédié à l'innovation dans le secteur immobilier
+    \end{minipage}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Mission et vision} 
+\end{itemize}
+
+Cercina repére les meilleurs profils tech, leur transmettre un mindset entrepreneurial, et les faire grandir au cœur de projets réels, dans un environnement exigeant mais stimulant. 
+Chez Cercina, on apprend en bâtissant. On façonne des fondateurs autant que des produits.
+
+% ==================================================
+\subsection{Cadre général}
+
+Le secteur immobilier constitue l'un des piliers économiques majeurs, et l'investissement locatif y occupe une place centrale pour les particuliers comme pour les professionnels souhaitant générer des revenus complémentaires ou constituer un patrimoine durable. Cependant, la décision d'investir dans un bien immobilier repose sur l'évaluation de multiples paramètres — prix d'acquisition, emplacement, demande locative, charges, fiscalité, risques de vacance — dont la combinaison rend l'estimation de la rentabilité particulièrement complexe.
+
+\subsection{Problématique}
+
+Dans la pratique, cette évaluation reste largement dépendante de l'expérience personnelle de l'investisseur, d'estimations approximatives, ou d'outils simplifiés qui ne prennent pas en compte l'ensemble des données réelles du marché. Cette situation engendre un manque de fiabilité dans les prévisions de rentabilité et expose les investisseurs à des décisions risquées, faute d'outils capables de croiser efficacement les données de vente, de location et les caractéristiques propres à chaque bien.
+
+Cette situation soulève dès lors la problématique suivante : \textbf{comment permettre à un investisseur d'estimer, de manière fiable et automatisée, la rentabilité locative réelle d'un bien immobilier, en exploitant des données de marché actualisées plutôt que des approximations empiriques ?}
+
+
+% ==================================================
+\section{Déscription de l’existant}
+\subsection{Étude de l'existant}
+L’analyse des solutions existantes montre que plusieurs plateformes permettent aujourd’hui d’évaluer des biens immobiliers et de simuler des investissements locatifs. Cependant, ces solutions présentent plusieurs limites importantes.
+
+% ==================================================
+\subsection{Critique de l’existant}
+
+\subsubsection{Manque de précision}
+
+Les solutions actuelles utilisent généralement des méthodes simplifiées qui ne reflètent pas toujours la réalité du marché immobilier.
+
+\subsubsection{Absence de croisement des données}
+
+La majorité des plateformes ne croisent pas efficacement les données de vente et de location.
+
+\subsubsection{Manque d’analyse intelligente}
+
+Les systèmes existants proposent rarement des analyses basées sur des techniques d’intelligence artificielle et de machine learning.
+
+% ==================================================
+\subsection{Solution proposée}
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.3\textwidth}
+        \centering
+        \includegraphics[width=0.8\textwidth]{images/logo.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.65\textwidth}
+        \raggedright
+        \textbf{Rentvly} est une plateforme web intelligente capable d’analyser les biens immobiliers et d’exploiter l’intelligence artificielle afin de prédire leur potentiel locatif.
+    \end{minipage}
+\end{figure}
+
+
+La plateforme permet notamment d’estimer le prix de location d’un bien à partir de ses caractéristiques et de fournir une vision plus précise de son potentiel d’investissement. Elle calcule également différents indicateurs clés de performance (KPI) permettant d’évaluer la rentabilité et la valeur d’un bien immobilier. Ces résultats offrent aux investisseurs une aide à la décision basée sur des estimations et des analyses automatisées.
+
+% ==================================================
+\newpage
+\section{Analyse des besoins}
+\subsection{Identification des acteurs}
+
+Les principaux acteurs du système sont :
+\begin{itemize}
+    \item Administrateur
+    \item Investisseur
+    \item Visiteur
+\end{itemize}
+
+\subsection{Identification des besoins}
+\subsubsection{Besoins fonctionnels}
+
+Les principales fonctionnalités attendues de la plateforme sont :
+
+\begin{itemize}
+    \item Gestion des utilisateurs
+    \item Analyse des biens immobiliers
+    \item Estimation automatique des loyers
+    \item Calcul de rentabilité locative
+    \item Tableau de bord analytique
+    \item Visualisation des statistiques
+    \item Comparaison des scénarios d’investissement
+\end{itemize}
+
+\subsubsection{Besoins non fonctionnels}
+
+Le système doit également respecter plusieurs contraintes non fonctionnelles :
+
+\begin{itemize}
+    \item Performance et rapidité d’exécution
+    \item Sécurité des données
+    \item Scalabilité du système
+    \item Simplicité et ergonomie de l’interface
+    \item Fiabilité des analyses générées
+\end{itemize}
+
+% ==================================================
+\section{Méthodologie de gestion du projet}
+
+\subsection{Méthodologies existantes}
+
+La gestion d'un projet informatique peut s'appuyer sur plusieurs méthodologies, chacune présentant des avantages et des limites selon le contexte du projet.
+
+\subsubsection{Le cycle en cascade (Waterfall)}
+
+Le modèle en cascade est une approche séquentielle et linéaire, dans laquelle chaque phase du projet (analyse, conception, développement, tests, déploiement) doit être achevée avant de passer à la suivante. Bien que simple à planifier, cette méthode manque de flexibilité : toute modification des besoins en cours de projet est coûteuse et difficile à intégrer, ce qui la rend peu adaptée aux projets dont les exigences évoluent.
+
+\subsubsection{Le modèle en V}
+
+Le modèle en V est une variante du cycle en cascade qui associe à chaque phase de conception une phase de test correspondante. Il améliore la traçabilité entre les besoins et les tests, mais conserve la même rigidité que le modèle en cascade, ce qui limite son adaptabilité face aux changements.
+
+\subsubsection{Les méthodes agiles}
+
+Les méthodes agiles reposent sur un développement itératif et incrémental, favorisant la collaboration, l'adaptation continue aux changements et la livraison régulière de fonctionnalités opérationnelles. Parmi les approches agiles les plus répandues, on distingue notamment :
+
+\begin{itemize}
+    \item \textbf{Scrum} : organise le développement en cycles courts appelés sprints, avec des livrables fonctionnels à chaque itération.
+    \item \textbf{Kanban} : privilégie la visualisation du flux de travail et la limitation du travail en cours, sans découpage strict en sprints.
+\end{itemize}
+
+\subsection{Choix de la méthodologie Scrum}
+
+Compte tenu des contraintes et des caractéristiques de notre projet, nous avons opté pour la méthodologie \textbf{Scrum}. Ce choix se justifie par plusieurs facteurs :
+
+\begin{itemize}
+    \item Le projet comporte des besoins susceptibles d'évoluer, notamment au niveau des fonctionnalités liées à l'intelligence artificielle, nécessitant une approche flexible.
+    \item Le découpage en sprints permet une livraison progressive et régulière des différents modules de la plateforme, facilitant le suivi de l'avancement.
+    \item Scrum favorise un retour d'expérience continu grâce aux réunions de revue et de rétrospective, permettant d'ajuster les priorités à chaque itération.
+    \item Cette méthodologie s'adapte bien à une équipe de taille réduite, ce qui correspond au contexte de notre stage de fin d'études.
+\end{itemize}
+
+La figure~\ref{fig:scrum-cycle} illustre le cycle de fonctionnement de la méthodologie Scrum, organisé autour du backlog produit, de la planification, du développement en sprint, de la revue, de l'incrément livrable et de la rétrospective.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/scrum.png}
+    \caption{Cycle de la méthodologie Scrum \cite{scrum}}
+    \label{fig:scrum-cycle}
+\end{figure}
+
+
+
+
+% ==================================================
+\section*{Conclusion}
+Ce chapitre a présenté le contexte du projet, l'organisme d'accueil Cercina Studio, ainsi que la problématique. L'étude de l'existant a permis de justifier la solution proposée, tandis que l'analyse des besoins a défini les acteurs et fonctionnalités attendus. Le choix de la méthodologie Scrumqui va permettre l'organisation du développement présenté dans les chapitres suivants.
+
+% ==================================================
+% SPRINT 0
+% ==================================================
+
+\chapter{Mise en place du projet}
+
+% ==================================================
+\section*{Introduction}
+
+Ce sprint représente la première phase du projet. Il consiste à analyser les besoins fonctionnels et techniques, à identifier les objectifs du système et à définir l’architecture globale de la solution. Cette phase constitue une étape essentielle avant le démarrage du développement afin d’assurer une meilleure organisation du projet et une vision claire des différentes fonctionnalités à implémenter.
+
+% ==================================================
+\section{Environnement et choix techniques}
+\subsection{Environnement de développement}
+\techitem{vscode.png}{Visual Studio Code}{Éditeur de code utilisé tout au long du projet pour le développement du frontend, du backend et des scripts Python.}
+
+\subsection{Languages de programmations}
+
+\techitem{js.png}{JavaScript}{Langage de programmation utilisé côté frontend pour la logique interactive des interfaces développées avec Nuxt.js.}
+
+\techitem{nuxt.png}{Nuxt.js}{Framework JavaScript utilisé pour le développement du frontend, permettant de créer des interfaces modernes, dynamiques et adaptatives fondées sur des composants.}
+
+\techitem{php.png}{PHP}{Langage de programmation côté serveur sur lequel repose le framework Laravel utilisé pour le développement du backend.}
+
+\techitem{laravel.png}{Laravel}{Framework PHP utilisé pour le développement du backend, facilitant la gestion de la logique métier, des API et de la sécurité.}
+
+\techitem{python.png}{Python}{Langage utilisé pour le développement du scraper de collecte des annonces ainsi que pour la conception du modèle d'intelligence artificielle.}
+
+\subsection{Géstion de base de données}
+\techitem{postgreSQL.png}{PostgreSQL}{Système de gestion de base de données relationnelle utilisé pour le stockage des données normalisées exploitées par l'application.}
+
+\techitem{mongodb.png}{MongoDB}{Système de gestion de base de données NoSQL utilisé pour le stockage des données brutes collectées lors du scraping.}
+
+\subsection{Outils cloud}
+\techitem{hostinger.png}{Hostinger}{Hébergeur utilisé pour le déploiement de l'infrastructure serveur de la plateforme, offrant les ressources nécessaires à l'exécution du backend, de la base de données et des services associés.}
+
+\techitem{dockploy.png}{Dokploy}{Plateforme de déploiement auto-hébergée utilisée pour automatiser la mise en production et la gestion des différents services de l'application (frontend, backend, API ML), à la manière d'un PaaS open source.}
+
+\techitem{backblaze.png}{Backblaze B2}{Service de stockage cloud utilisé pour héberger les images associées aux annonces immobilières collectées, assurant une gestion fiable et économique des ressources multimédias.}
+
+% ==================================================
+\section{Analyse et spécification des besoins}
+Dans cette section, nous détaillerons les besoins fonctionnels à développer à travers le diagramme de cas d’utilisation et le backlog produit, puis nous aborderons la planification du projet et l’organisation des fonctionnalités en différents sprints.
+
+
+Le diagramme de cas d'utilisation representé dans la figure \ref{fig:usecase} illustre les principaux fonctionnalitées à développer tout au long de ce projet
+
+\begin{figure}[H]
+    \centering
+    \projectimage{uc-general.png}
+    \caption{Diagramme de cas d’utilisation général}
+    \label{fig:usecase}
+\end{figure}
+
+
+\subsection{Backlog produit}
+Le backlog produit présenté dans le tableau~\ref{tab:backlog} regroupe les User Stories du système ainsi que leurs relations avec les différentes fonctionnalités à développer.
+\input{backlog}
+\newpage
+\subsection{Diagramme de classe d'analyse}
+
+Le diagramme de classes d'analyse présenté dans la figure~\ref{fig:diagramme-classe-analyse} illustre les principales classes métier du système ainsi que leurs relations.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/class-diag.png}
+    \caption{Diagramme de class d'analyse}
+    \label{fig:diagramme-classe-analyse}
+\end{figure}
+
+\subsection{Planification des sprints}
+Le développement du projet est réparti en quatre sprints permettant une progression logique et organisée des différentes phases du système, depuis la gestion des utilisateurs jusqu'à l'administration de la plateforme. Le tableau~\ref{tab:sprints} présente la répartition des sprints, les identifiants des User Stories associées (voir tableau~\ref{tab:backlog}) ainsi que l'estimation en jours.
+
+\begin{table}[H]
+\centering
+\singlespacing
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.10\textwidth}|>{\raggedright\arraybackslash}p{0.34\textwidth}|>{\raggedright\arraybackslash}p{0.36\textwidth}|>{\centering\arraybackslash}p{0.10\textwidth}|}
+\hline
+\textbf{Id Sprint} & \textbf{Nom} & \textbf{Id User Story} & \textbf{Estimation (jour)} \\
+\hline
+1 & Gestion de l'authentification & 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 & 15 \\
+\hline
+2 & Annonces immobilières et dashboard investisseur & 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 43, 44, 45, 46 & 35 \\
+\hline
+3 & Développement du modèle d'IA & ML-1 à ML-5 & 12 \\
+\hline
+4 & Administration de la plateforme & 34, 35, 38, 39, 40, 41, 42 & 10 \\
+\hline
+\end{tabular}
+\caption{Planification des sprints}
+\label{tab:sprints}
+\end{table}
+
+
+
+
+% ==================================================
+\section{Architecture globale du système}
+
+L’architecture globale du système repose sur une interface utilisateur développée avec Nuxt.js et un backend développé avec Laravel. MongoDB assure le stockage des données brutes collectées, tandis que PostgreSQL conserve les données normalisées exploitées par l’application. Le processus de collecte est développé en Python, et le modèle d’intelligence artificielle fournit les estimations utilisées par la plateforme. Les modules correspondants sont détaillés dans les chapitres suivants.
+
+\begin{figure}[H]
+    \centering
+    \projectimage{Arch_sys_global.png}
+    \caption{Architecture globale du système}
+\end{figure}
+
+% ==================================================
+\section*{Conclusion}
+
+Dans ce sprint, nous avons présenté l’étude des besoins du système ainsi que l’architecture technique globale du projet. Nous avons également décrit les sources utilisées pour la collecte des données immobilières ainsi que l’organisation des sprints permettant de structurer le développement de la plateforme.
+\chapter{Sprint 1 : Authentification et gestion des utilisateurs}
+
+% ==================================================
+\section*{Introduction}
+
+Ce sprint est dédié à la mise en place du système d’authentification. Cette fonctionnalité est la porte d’entrée principale de la plateforme qui garantit un accès sécurisé aux différentes fonctionnalités proposées.
+
+L’objectif est de permettre aux utilisateurs de créer un compte, de se connecter de manière sécurisée et d’accéder à leur espace personnel sur notre plateforme tout en assurant la protection des données et des ressources de l’application.
+\section{Objectifs du sprint}
+Les principaux objectifs de ce sprint sont :
+\begin{itemize}
+    \item Développer un système sécurisé d'inscription et de connexion
+    \item Possibilité de récupérer son compte
+    \item Mettre en place une authentification à deux facteurs (2FA)
+    \item Assurer la gestion des sessions utilisateurs
+
+\end{itemize}
+
+\section{Backlog du sprint}
+\input{backlog_sprint1}
+
+\section{Sécurité du système d’authentification}
+
+Afin de sécuriser les échanges entre le frontend et le backend, nous avons utilisé Laravel Sanctum.
+\subsection{Laravel sanctum}
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.4\textwidth}
+        \centering
+        \includegraphics[width=0.8\textwidth]{images/sanctum.jpg}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.55\textwidth}
+        \raggedright
+        Laravel Sanctum est une solution d’authentification légère développée par Laravel permettant de sécuriser les applications web modernes et les API REST. Il fournit un mécanisme simple de gestion des sessions et des jetons d’accès tout en assurant une intégration native avec l’écosystème Laravel.
+    \end{minipage}
+\end{figure}
+
+L’utilisation de Sanctum permet de protéger les ressources de l’application tout en conservant une excellente expérience utilisateur.
+
+\subsection{Sécurité du système d’authentification avec Sanctum}
+
+La sécurité constitue un élément essentiel de la plateforme.
+
+Plusieurs mécanismes de protection ont été mis en place à l'aide de Laravel, de Sanctum et de la logique d'autorisation de l'application :
+
+\begin{itemize}
+    \item Authentification basée sur des tokens sécurisés
+    \item Gestion sécurisée des sessions utilisateur
+    \item Protection contre les accès non autorisés
+    \item Gestion des permissions selon le rôle utilisateur
+    \item Hachage des mots de passe
+\end{itemize}
+
+% ==================================================
+\section{Conception}
+
+% ==================================================
+% ==================================================
+\subsection{Inscription avec authentification à deux facteurs}
+
+Cette partie présente le processus d'inscription d'un nouvel investisseur sur la plateforme. L'objectif est de permettre la création d'un compte utilisateur tout en assurant un niveau de sécurité élevé dès la phase d'inscription.
+
+L'inscription concerne uniquement les investisseurs. Les comptes administrateurs ne sont pas créés à travers ce processus : leur création est réservée au responsable du système, selon la procédure décrite dans le chapitre consacré à l'administration.
+
+Afin de renforcer la sécurité des comptes utilisateurs, le processus d'inscription intègre une authentification à deux facteurs (2FA). Cette fonctionnalité ajoute une étape de vérification supplémentaire permettant de confirmer l'identité de l'utilisateur et de renforcer la protection de son compte.
+
+\subsubsection{Diagramme de séquence de l'inscription}
+
+Le diagramme suivant présente les différentes interactions réalisées lors de l'inscription d'un investisseur, depuis la saisie des informations nécessaires jusqu'à la création du compte et la mise en place de l'authentification à deux facteurs.
+
+\newgeometry{left=0.8cm,right=0.8cm,top=0.8cm,bottom=1.5cm}
+\begin{figure}[p]
+    \centering
+    \singlespacing
+    \includegraphics[width=\linewidth,height=\dimexpr\textheight-3\baselineskip\relax,keepaspectratio]{images/register-seq.png}
+    \caption{Diagramme de séquence de l'inscription d'un investisseur}
+    \label{fig:sequence-register-2fa}
+\end{figure}
+\restoregeometry
+
+
+
+
+% ==================================================
+\subsection{Connexion et récupération du mot de passe}
+
+Cette partie concerne le processus de connexion à la plateforme. Celui-ci est accessible aux différents types d'utilisateurs du système, notamment les investisseurs et les administrateurs.
+
+Le système permet aux utilisateurs de se connecter à leur espace personnel à l'aide de leurs informations d'authentification. En cas d'oubli du mot de passe, une fonctionnalité de récupération est également disponible.
+
+Le processus de récupération du mot de passe utilise un service de messagerie électronique basé sur Gmail. Un message contenant les informations nécessaires à la réinitialisation du mot de passe est envoyé à l'utilisateur afin de lui permettre de récupérer l'accès à son compte de manière sécurisée.
+
+\subsubsection{Diagramme de séquence de la connexion et de la récupération du mot de passe}
+
+Le diagramme suivant présente les différentes interactions réalisées lors de la connexion d'un utilisateur à la plateforme. Il inclut également le processus de récupération et de réinitialisation du mot de passe en cas d'oubli.
+
+\newgeometry{left=0.8cm,right=0.8cm,top=0.8cm,bottom=1.5cm}
+\begin{figure}[p]
+    \centering
+    \singlespacing
+    \includegraphics[width=\linewidth,height=\dimexpr\textheight-3\baselineskip\relax,keepaspectratio]{images/login-seq.png}
+    \caption{Diagramme de séquence de la connexion et de la récupération du mot de passe}
+    \label{fig:sequence-login-reset}
+\end{figure}
+\restoregeometry
+\section{Développement du frontend}
+
+L’interface utilisateur a été développée avec Nuxt.js dans le but de fournir une expérience moderne, rapide et intuitive.
+
+Une attention particulière a été portée à l’ergonomie des formulaires d’inscription et de connexion afin de réduire les frictions lors de l’utilisation de la plateforme.
+
+Les interfaces développées permettent :
+
+\begin{itemize}
+    \item L’inscription rapide des utilisateurs
+    \item La connexion classique par email
+    \item La connexion via Google
+    \item La gestion des erreurs en temps réel
+    \item Une navigation fluide entre les différentes pages
+\end{itemize}
+\begin{figure}[H]
+    \centering
+\includegraphics[width=0.6\textwidth]{images/login.png}
+    \caption{page de login}
+    \label{fig:login-page}
+\end{figure}
+\begin{figure}[H]
+    \centering
+\includegraphics[width=0.6\textwidth]{images/register.png}
+    \caption{page de register}
+    \label{fig:register-page}
+\end{figure}
+% ==================================================
+\section{Tests et validation}
+
+Des tests fonctionnels ont été réalisés afin de vérifier :
+\begin{table}[H]
+    \centering
+    \caption{Tests et validation du système d’authentification}
+    \label{tab:tests-authentification}
+    \begin{tabular}{|p{11cm}|c|}
+        \hline
+        \textbf{Cas de test} & \textbf{État} \\
+        \hline
+        Vérification du bon fonctionnement de l’inscription 
+        & $\checkmark$  \\
+        \hline
+        Vérification du bon fonctionnement de la connexion 
+        & $\checkmark$  \\
+        \hline
+        Vérification de la protection des routes privées 
+        & $\checkmark$  \\
+        \hline
+        Vérification de la génération correcte des tokens d’accès 
+        & $\checkmark$  \\
+        \hline
+        Vérification du fonctionnement de l’authentification Google 
+        & $\checkmark$  \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Les résultats obtenus ont permis de valider le bon fonctionnement du système d’authentification.
+
+% ==================================================
+\section*{Conclusion}
+
+Ce sprint a permis de mettre en place une solution complète d’authentification et de gestion des utilisateurs reposant sur Laravel Sanctum. Les mécanismes de sécurité implémentés garantissent la protection des données et des ressources de la plateforme, tandis que l’intégration de l’authentification Google et le développement d’interfaces ergonomiques offrent une expérience utilisateur moderne et fluide.
+\chapter{Sprint 2 : Annonces immobilières et dashboard investisseur}
+
+% ==================================================
+\section*{Introduction}
+
+Ce sprint regroupe deux volets complémentaires de la plateforme : la consultation des annonces immobilières et l’espace investisseur. L’objectif est de relier l’exploration du marché à l’analyse et au suivi des investissements au sein d’un même parcours utilisateur.
+
+D’une part, le module d’annonces permet d’accéder aux données immobilières collectées, de rechercher des biens selon différents critères et de consulter le détail de chaque annonce. D’autre part, le tableau de bord investisseur centralise les estimations, les biens achetés et les indicateurs de performance. Ces deux parties forment ainsi un continuum fonctionnel : l’utilisateur découvre un bien, lance une analyse, puis retrouve et suit ses résultats dans son espace personnel.
+
+% ==================================================
+\section{Objectifs du sprint}
+
+Les principaux objectifs de ce sprint sont les suivants :
+
+\begin{itemize}
+    \item Développer l’interface de consultation des annonces
+    \item Mettre en place un système de recherche et de filtrage
+    \item Afficher les détails complets des biens immobiliers
+    \item Mettre en place la collecte, le nettoyage et l’intégration des annonces
+    \item Développer le tableau de bord investisseur
+    \item Permettre la gestion des annonces estimées et des biens achetés
+    \item Afficher les statistiques des investissements
+    \item Relier le parcours de consultation à l’enregistrement et au suivi des analyses
+\end{itemize}
+
+% ==================================================
+\section{Backlog du sprint}
+\input{backlog_sprint2}
+
+% ==================================================
+\section{Parcours utilisateur : de l’annonce au tableau de bord}
+
+Ce sprint articule deux modules autour d’un même scénario métier. L’investisseur commence par explorer le catalogue d’annonces, affine sa recherche à l’aide des filtres, consulte la fiche détaillée d’un bien, puis lance une estimation de rentabilité. Les résultats obtenus sont ensuite enregistrés dans son tableau de bord, où il peut les retrouver, les comparer ou suivre l’évolution de son portefeuille.
+
+Cette organisation permet de connecter la donnée immobilière (annonces collectées et normalisées) aux outils d’aide à la décision (estimations, KPI, historique). Le catalogue alimente ainsi l’espace investisseur, tandis que le tableau de bord donne une vue synthétique de l’activité réalisée sur ces annonces.
+
+% ==================================================
+\section{Consultation des annonces immobilières}
+
+Le module de consultation permet aux utilisateurs d’explorer les biens disponibles à travers une interface moderne et ergonomique. Les annonces sont présentées sous forme de cartes contenant les principales informations du bien (prix, localisation, surface, nombre de pièces, image principale). Chaque annonce est cliquable et donne accès à une page détaillée.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/annonces.png}
+    \caption{Liste des annonces immobilières}
+    \label{fig:image_annonce}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/annonces1.png}
+    \caption{Détail d'une annonce}
+    \label{fig:image_annonce1}
+\end{figure}
+
+Afin de faciliter la recherche, plusieurs filtres ont été intégrés : recherche par ville ou code postal, type de bien (appartement ou maison), tranche de prix et tri des résultats (plus récents, prix croissant, prix décroissant, surface). Cette approche permet d’obtenir rapidement des résultats adaptés aux besoins de chaque utilisateur.
+
+% ==================================================
+\section{Collecte, traitement et stockage des annonces}
+
+L’ensemble des annonces affichées provient d’un processus automatisé de collecte depuis la plateforme Bien'ici. Un scraper Python interroge l’API interne, paginate les résultats, extrait les annonces de location et de vente, puis stocke les données brutes dans MongoDB de manière incrémentale.
+
+\begin{table}[H]
+\centering
+\singlespacing
+\begin{tabular}{|p{5cm}|p{8cm}|}
+\hline
+\textbf{Bibliothèque} & \textbf{Description} \\
+\hline
+requests & Requêtes HTTP vers l'API de collecte \\
+\hline
+pymongo & Communication avec MongoDB \\
+\hline
+python-dotenv & Gestion des variables d'environnement \\
+\hline
+\end{tabular}
+\caption{Bibliothèques utilisées pour la collecte des données}
+\end{table}
+
+Après la collecte, les données sont nettoyées et normalisées (formats textuels, types de biens, champs obligatoires, prix au mètre carré, coordonnées géographiques). MongoDB conserve les données brutes, PostgreSQL les données exploitées par l’application, et Backblaze B2 héberge les images associées.
+
+\begin{table}[H]
+\centering
+\singlespacing
+\begin{tabular}{|p{5cm}|p{8cm}|}
+\hline
+\textbf{Champ} & \textbf{Description} \\
+\hline
+Prix & Prix de location ou de vente \\
+\hline
+Surface & Surface du bien en m² \\
+\hline
+Ville & Localisation du bien \\
+\hline
+Code postal & Zone géographique \\
+\hline
+Type de bien & Appartement, maison, studio, etc. \\
+\hline
+Nombre de pièces & Nombre total de pièces \\
+\hline
+Nombre de chambres & Nombre de chambres disponibles \\
+\hline
+Description & Description détaillée de l’annonce \\
+\hline
+Photos & Images du bien immobilier \\
+\hline
+Coordonnées géographiques & Latitude et longitude du bien \\
+\hline
+Prix au mètre carré & Valeur calculée automatiquement \\
+\hline
+Classe énergétique & Diagnostic énergétique \\
+\hline
+Date de publication & Date de mise en ligne \\
+\hline
+\end{tabular}
+\caption{Principales données collectées pour les annonces}
+\end{table}
+
+% ==================================================
+\section{Tableau de bord investisseur et suivi des analyses}
+
+Le tableau de bord constitue l’espace personnel de l’investisseur après authentification. Il regroupe les outils nécessaires à l’analyse et au suivi des investissements : historique des estimations, biens achetés, indicateurs de performance et accès aux résultats d’analyse.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/dashboard-investisseur.png}
+    \caption{Tableau de bord investisseur}
+    \label{fig:dashboard-investisseur}
+\end{figure}
+
+% ==================================================
+\section{Conception}
+
+\subsection{Diagramme de séquence du parcours annonce -- dashboard}
+
+Le diagramme suivant illustre le parcours combiné développé dans ce sprint : consultation et filtrage des annonces, accès au détail d’un bien, lancement d’une estimation, puis consultation et gestion des résultats depuis le tableau de bord investisseur. Il connecte ainsi le module catalogue et l’espace personnel de suivi.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth,height=0.75\textheight,keepaspectratio]{images/07-sequence-dashboard-investisseur.png}
+\caption{Diagramme de séquence du parcours annonces et dashboard investisseur}
+\label{fig:sequence-annonces-dashboard}
+\end{figure}
+
+% ==================================================
+\section{Développement de l’interface utilisateur}
+
+Les interfaces de consultation des annonces et du tableau de bord ont été développées avec Nuxt.js afin d’offrir une expérience moderne, réactive et intuitive. Une attention particulière a été portée à l’ergonomie afin de fluidifier le passage de la recherche d’un bien à l’analyse et au suivi dans l’espace investisseur.
+
+L’interface permet notamment :
+
+\begin{itemize}
+\item La navigation dans le catalogue et l’application des filtres
+\item La consultation du détail des annonces
+\item L’accès aux statistiques personnelles
+\item La gestion des estimations enregistrées et des biens achetés
+\item Une navigation rapide entre le catalogue et le tableau de bord
+\end{itemize}
+
+% ==================================================
+\section{Tests et validation}
+
+Des tests ont été réalisés afin de vérifier le bon fonctionnement du parcours complet, depuis la consultation des annonces jusqu’au suivi dans le tableau de bord investisseur.
+
+\begin{table}[H]
+    \centering
+    \caption{Tests et validation du sprint annonces et dashboard investisseur}
+    \label{tab:tests-annonces-dashboard}
+    \begin{tabular}{|p{11cm}|c|}
+        \hline
+        \textbf{Cas de test} & \textbf{État} \\
+        \hline
+        Test de l’affichage des annonces immobilières
+        & $\checkmark$ \\
+        \hline
+        Test de la recherche et des filtres d’annonces
+        & $\checkmark$ \\
+        \hline
+        Test de la consultation des détails d’un bien
+        & $\checkmark$ \\
+        \hline
+        Vérification de la qualité et de la cohérence des données publiées
+        & $\checkmark$ \\
+        \hline
+        Test de l’affichage des sections du tableau de bord
+        & $\checkmark$ \\
+        \hline
+        Vérification des statistiques et des estimations enregistrées
+        & $\checkmark$ \\
+        \hline
+        Vérification de la navigation entre catalogue et espace investisseur
+        & $\checkmark$ \\
+        \hline
+        Vérification de la cohérence des informations affichées
+        & $\checkmark$ \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Ces tests ont permis de valider le fonctionnement des modules développés et la continuité du parcours utilisateur entre la consultation des annonces et le tableau de bord.
+
+% ==================================================
+\section*{Conclusion}
+
+Ce sprint a permis de développer conjointement le module de consultation des annonces et l’espace investisseur. Les utilisateurs peuvent désormais explorer le marché, filtrer les biens, lancer des analyses, puis suivre leurs estimations et leur portefeuille dans un tableau de bord centralisé. Le chapitre suivant présente la conception, l’entraînement et l’évaluation du modèle de Machine Learning utilisé pour les estimations immobilières.
+
+% ==================================================
+\chapter{Sprint 3 : Développement du modèle d’intelligence artificielle}
+% ==================================================
+
+\section*{Introduction}
+
+Après la mise en place de l’infrastructure de collecte des données et le développement de la plateforme web, ce sprint est consacré à la conception et à l’intégration du modèle d’intelligence artificielle permettant l’estimation automatique de la rentabilité locative et des loyers immobiliers.
+
+L’objectif principal est d’exploiter les données immobilières collectées afin de construire un modèle prédictif capable d’assister les investisseurs dans leurs prises de décision en fournissant des estimations fiables basées sur les caractéristiques des biens immobiliers et les données du marché.
+
+Pour mener à bien cette phase, nous avons adopté la méthodologie \textbf{CRISP-DM (Cross Industry Standard Process for Data Mining)}, largement utilisée dans les projets de Data Science et de Machine Learning.
+
+% ==================================================
+\section{Objectifs du sprint}
+
+Les principaux objectifs de ce sprint sont :
+
+\begin{itemize}
+    \item Préparer les données pour l'apprentissage automatique
+    \item Construire les modèles prédictifs
+    \item Comparer les performances des modèles
+    \item Sélectionner le modèle le plus performant
+    \item Intégrer le modèle dans la plateforme
+\end{itemize}
+
+% ==================================================
+\section{Backlog du sprint}
+\input{backlog_sprint3}
+
+% ==================================================
+\section{Présentation de la méthodologie CRISP-DM}
+
+CRISP-DM est une méthodologie structurée permettant d'organiser un projet de Machine Learning en plusieurs phases successives.
+
+Elle comprend six étapes principales :
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{images/wi-crisp.jpg.jpeg}
+    \caption{Les différentes phases de la méthodologie CRISP-DM}
+    \label{fig:crisp-dm}
+\end{figure}
+
+Cette méthodologie nous a permis de structurer efficacement le développement du modèle d'estimation immobilière.
+
+% ==================================================
+\section{Compréhension du métier}
+
+L’objectif métier consiste à aider les investisseurs immobiliers à estimer rapidement la rentabilité potentielle d’un bien immobilier.
+
+L’utilisateur renseigne différentes informations relatives au bien immobilier telles que :
+
+\begin{itemize}
+    \item Le prix du bien
+    \item La surface
+    \item La localisation
+    \item Le type de bien
+    \item Le nombre de pièces
+    \item Les caractéristiques du logement
+\end{itemize}
+
+À partir de ces informations, le système fournit une estimation du loyer ainsi qu'une projection de rentabilité.
+
+% ==================================================
+\section{Compréhension des données}
+
+Les données utilisées pour l'entraînement proviennent des annonces immobilières collectées lors des précédents sprints.
+
+Les informations principales exploitées sont :
+
+\begin{itemize}
+    \item Prix du bien
+    \item Surface
+    \item Ville
+    \item Département
+    \item Type de bien
+    \item Nombre de pièces
+    \item Nombre de chambres
+    \item Informations géographiques
+    \item Prix au mètre carré
+    \item Classe énergétique
+\end{itemize}
+
+Les données sont stockées dans MongoDB avant leur traitement et leur préparation pour la phase d'apprentissage.
+
+\textit{À compléter : préciser le nombre d'annonces utilisées, la période de collecte, la définition du loyer cible et les variables effectivement retenues pour l'entraînement.}
+
+% ==================================================
+\section{Préparation des données}
+
+Avant l'entraînement des modèles, plusieurs traitements ont été appliqués afin d'améliorer la qualité des données.
+
+Les principales opérations réalisées sont :
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{images/pipeline.png}
+    \caption{Les différents étapes de préparation des données}
+    \label{fig:pipeline-prep}
+\end{figure}
+
+Cette étape permet d'obtenir un jeu de données cohérent et exploitable par les algorithmes de Machine Learning.
+
+Les données ont été séparées en trois ensembles : entraînement, validation et test. L’ensemble d’entraînement est utilisé pour apprendre le modèle, l’ensemble de validation pour ajuster ses paramètres, et l’ensemble de test pour évaluer ses performances finales sur des données non utilisées lors de l’apprentissage. Le protocole d’évaluation repose sur la comparaison des valeurs prédites avec les valeurs réelles à l’aide de métriques adaptées à la régression. Afin d’éviter toute fuite de données, les données de test restent totalement indépendantes durant l’entraînement et l’ajustement du modèle, et les étapes de préparation des données sont réalisées à partir de l’ensemble d’entraînement avant leur application aux autres ensembles.
+
+
+% ==================================================
+\section{Modélisation}
+
+Afin d'identifier le modèle le plus performant, plusieurs algorithmes ont été évalués.
+
+\subsection{Arbre de décision}
+
+Le premier modèle testé est l'algorithme d'arbre de décision.
+
+Ce modèle présente plusieurs avantages :
+
+\begin{itemize}
+    \item Facilité d'interprétation
+    \item Rapidité d'entraînement
+    \item Simplicité de mise en œuvre
+\end{itemize}
+
+La précision des estimations et la capacité de généralisation de ce modèle doivent être documentées par les résultats d'évaluation.
+
+% ==================================================
+\subsection{Modèle CatBoost}
+
+Après les premiers tests, nous avons expérimenté l’algorithme \textbf{CatBoost}.
+
+CatBoost est un algorithme de Gradient Boosting particulièrement efficace pour le traitement des données tabulaires et des variables catégorielles.
+
+Les avantages de CatBoost sont :
+
+\begin{itemize}
+    \item Gestion native des variables catégorielles
+    \item Excellente précision prédictive
+    \item Réduction du surapprentissage
+    \item Bonne capacité de généralisation
+    \item Temps d'entraînement optimisé
+\end{itemize}
+
+La comparaison avec l'arbre de décision doit être étayée par les résultats chiffrés présentés dans la section suivante.
+
+% ==================================================
+\section{Évaluation des modèles}
+
+Afin de comparer les performances des différents modèles, plusieurs métriques d'évaluation ont été utilisées.
+
+\subsection{Métriques utilisées}
+
+\begin{itemize}
+    \item \textbf{Mean Absolute Error (MAE)} : mesure l'erreur absolue moyenne entre les valeurs prédites et les valeurs réelles. Une valeur faible indique une meilleure précision du modèle.
+    \[
+    MAE = \frac{1}{n}\sum_{i=1}^{n} |y_i - \hat{y}_i|
+    \]
+
+    \item \textbf{Mean Squared Error (MSE)} : mesure la moyenne des erreurs au carré et pénalise davantage les grandes erreurs de prédiction.
+    \[
+    MSE = \frac{1}{n}\sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+    \]
+
+    \item \textbf{Root Mean Squared Error (RMSE)} : représente la racine carrée de l'erreur quadratique moyenne et exprime l'erreur dans la même unité que la variable prédite.
+    \[
+    RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+    \]
+
+    \item \textbf{Coefficient de détermination ($R^2$)} : mesure la proportion de la variance des valeurs réelles expliquée par le modèle. Une valeur proche de 1 indique un meilleur ajustement.
+    \[
+    R^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
+    {\sum_{i=1}^{n}(y_i - \bar{y})^2}
+    \]
+\end{itemize}
+
+où $y_i$ représente la valeur réelle, $\hat{y}_i$ la valeur prédite,
+$\bar{y}$ la moyenne des valeurs réelles et $n$ le nombre d'observations.
+\subsection{Résultats obtenus}
+
+\begin{table}[H]
+\centering
+\singlespacing
+\begin{tabular}{|p{4cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+\hline
+\textbf{Modèle} & \textbf{$R^2$} & \textbf{RMSE} & \textbf{MAE} & \textbf{MSE} \\
+\hline
+Arbre de décision &  0,75 & 275 € & 160 & 72000 \\
+\hline
+CatBoost &0,8698 & 175,30 €  & 106,62 &32251\\
+\hline
+\end{tabular}
+\caption{Comparaison des performances des modèles}
+\end{table}
+
+Les valeurs des métriques doivent être renseignées à partir des évaluations réalisées. En leur absence, ce tableau ne permet pas de conclure à la supériorité d'un modèle. L'unité de la RMSE et l'échelle utilisée pour le coefficient $R^2$ doivent également être précisées.
+
+
+
+% ==================================================
+\section{Intégration du modèle dans la plateforme}
+
+Une fois le modèle validé, celui-ci a été intégré à la plateforme afin de permettre aux investisseurs d’obtenir des estimations en temps réel.
+
+Le processus d'utilisation est le suivant :
+
+\begin{enumerate}
+    \item Sélection d'une annonce immobilière
+    \item Récupération des caractéristiques du bien
+    \item Transmission des données au modèle
+    \item Génération de la prédiction
+    \item Affichage du résultat à l'utilisateur
+\end{enumerate}
+
+L’investisseur peut ainsi évaluer rapidement le potentiel locatif d’un bien immobilier avant toute prise de décision.
+
+% ==================================================
+\section{Déploiement du modèle}
+
+Le modèle final a été exporté puis intégré dans l’architecture backend de la plateforme.
+
+Le système permet :
+
+\begin{itemize}
+    \item Le chargement automatique du modèle
+    \item L'exécution des prédictions en temps réel
+    \item La génération des estimations directement depuis l'interface utilisateur
+    \item La mise à jour future du modèle sans modification majeure de l'application
+\end{itemize}
+
+% ==================================================
+\section*{Conclusion}
+
+Ce sprint a permis de développer et d’intégrer le modèle d’intelligence artificielle utilisé pour l’estimation immobilière. En suivant la méthodologie CRISP-DM, nous avons préparé les données, testé plusieurs algorithmes et sélectionné CatBoost comme modèle final. Les résultats d'évaluation restent à renseigner dans ce mémoire pour justifier quantitativement ce choix.
+
+L’intégration de ce modèle constitue un élément central de la plateforme puisqu’il permet d’apporter une valeur ajoutée aux investisseurs en leur fournissant des estimations rapides et fiables basées sur les données réelles du marché immobilier.
+
+
+% ==================================================
+\chapter{Sprint 4 : Administration et supervision de la plateforme}
+% ==================================================
+
+\section*{Introduction}
+
+Ce sprint est consacré au développement du tableau de bord administrateur permettant la supervision globale de la plateforme. Cette interface offre à l’administrateur l’ensemble des outils nécessaires pour gérer les utilisateurs, contrôler les annonces immobilières, suivre les performances du modèle d’intelligence artificielle et assurer le bon fonctionnement du système.
+
+L’objectif principal de ce sprint est de mettre à disposition une interface sécurisée permettant une gestion centralisée de l’ensemble des ressources de la plateforme.
+
+% ==================================================
+\section{Objectifs du sprint}
+
+Les principaux objectifs de ce sprint sont :
+
+\begin{itemize}
+    \item Développer une interface d’administration sécurisée
+    \item Gérer les investisseurs inscrits sur la plateforme
+    \item Gérer les annonces immobilières
+    \item Superviser les données collectées
+    \item Suivre les performances du modèle d’intelligence artificielle
+    \item Consulter les statistiques globales de la plateforme
+\end{itemize}
+
+% ==================================================
+\section{Backlog du sprint}
+\input{backlog_sprint4}
+% ==================================================
+\section{Architecture du module d’administration}
+
+Le module d’administration constitue la couche de supervision de la plateforme. Il permet à l’administrateur d’accéder à l’ensemble des fonctionnalités de gestion depuis une interface unique.
+
+Les principales fonctionnalités offertes sont :
+
+\begin{itemize}
+    \item Gestion des investisseurs
+    \item Gestion des annonces immobilières
+    \item Consultation des statistiques globales
+    \item Suivi des performances du modèle IA
+    \item Gestion des données collectées
+\end{itemize}
+% ==================================================
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/admin1.png}
+    \caption{page admin}
+    \label{fig:admin_page}
+\end{figure}
+\section{Conception}
+
+\subsection{Diagramme de séquence}
+
+Le diagramme de séquence suivant présente le fonctionnement général du tableau de bord administrateur. Il illustre les principales interactions entre l’administrateur, l’interface de la plateforme, le backend et les services associés lors de l’authentification, de la consultation des données et de la gestion des différentes ressources.
+
+\subsection{Diagramme de séquence du tableau de bord administrateur}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth,height=0.75\textheight,keepaspectratio]{images/11-sequence-admin.png}
+    \caption{Diagramme de séquence du tableau de bord administrateur}
+    \label{fig:sequence-dashboard-admin}
+\end{figure}
+
+% ==================================================
+\section{Système d’authentification administrateur}
+
+Afin de garantir un niveau de sécurité élevé, aucun système d’inscription publique n’est disponible pour les administrateurs.
+
+L’accès à l’interface d’administration est limité aux comptes créés manuellement par le responsable du système.
+
+Pour renforcer la sécurité, les mots de passe administrateurs sont générés directement depuis le terminal du serveur à l’aide des outils fournis par Laravel.
+
+Cette approche présente plusieurs avantages :
+
+\begin{itemize}
+    \item Suppression du risque de création de comptes non autorisés
+    \item Contrôle total des accès administrateurs
+    \item Réduction de la surface d’attaque
+    \item Renforcement de la sécurité globale du système
+\end{itemize}
+
+L’authentification repose sur les mécanismes de sécurité intégrés à Laravel afin de protéger les accès sensibles de la plateforme.
+
+% ==================================================
+\section{Gestion des utilisateurs}
+
+Le tableau de bord administrateur permet de gérer l’ensemble des utilisateurs inscrits sur la plateforme.
+
+Les fonctionnalités disponibles sont :
+
+\begin{itemize}
+    \item Consultation de la liste des utilisateurs
+    \item Recherche d’un utilisateurs
+    \item Consultation des informations détaillées
+    \item Modification des informations utilisateur
+    \item Suspension ou suppression d’un compte
+\end{itemize}
+
+Cette fonctionnalité permet d’assurer un meilleur contrôle des utilisateurs de la plateforme.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/admin3.png}
+    \caption{gestion des utilisateurs}
+    \label{fig:admin_users}
+\end{figure}
+% ==================================================
+\section{Gestion des annonces immobilières}
+
+L’administrateur dispose également d’un module dédié à la gestion des annonces immobilières.
+
+Les principales opérations disponibles sont :
+
+\begin{itemize}
+    \item Consultation des annonces
+    \item Recherche et filtrage des annonces
+    \item Modification des informations
+    \item Suppression d’une annonce
+    \item Contrôle des données importées
+\end{itemize}
+Ce module facilite le contrôle qualité des données affichées aux investisseurs.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/admin2.png}
+    \caption{gestion des annonces admin}
+    \label{fig:gest_an_admin}
+\end{figure}
+% ==================================================
+\section{Suivi du modèle d’intelligence artificielle}
+
+Une partie du tableau de bord est dédiée au suivi du modèle de Machine Learning intégré dans la plateforme.
+
+L’administrateur peut notamment consulter :
+
+\begin{itemize}
+    \item Les performances globales du modèle
+    \item Les métriques d’évaluation
+    \item Le nombre de prédictions réalisées
+    \item Les informations relatives à la dernière version du modèle
+\end{itemize}
+
+Cette fonctionnalité permet de surveiller l’efficacité du système prédictif et d’identifier rapidement d’éventuelles dégradations des performances.
+
+% ==================================================
+\section{Statistiques et indicateurs}
+
+Le tableau de bord fournit également plusieurs indicateurs permettant d’obtenir une vue globale de l’activité de la plateforme.
+
+Les statistiques affichées comprennent notamment :
+
+\begin{itemize}
+    \item Nombre total d’investisseurs
+    \item Nombre total d’annonces
+    \item Nombre d’estimations réalisées
+    \item Répartition des biens immobiliers
+    \item Répartition géographique des annonces
+    \item Statistiques liées au modèle IA
+\end{itemize}
+
+Ces indicateurs permettent de suivre l’évolution de la plateforme et de faciliter la prise de décision.
+\section{Test et validation}
+
+Des tests ont été réalisés afin de vérifier le bon fonctionnement du module d’administration ainsi que la fiabilité des différentes fonctionnalités développées. Les vérifications ont porté sur les opérations CRUD des utilisateurs, la gestion des annonces, la cohérence des statistiques, les performances du modèle d’intelligence artificielle et le comportement de l’interface frontend.
+
+\begin{table}[H]
+    \centering
+    \caption{Tests et validation du module d’administration} 
+    \label{tab:tests-administration}
+    \begin{tabular}{|p{11cm}|c|} 
+        \hline
+        \textbf{Cas de test} & \textbf{État} \\
+        \hline
+        Test de la CRUD des utilisateurs
+        & $\checkmark$ \\
+        \hline
+        Test de CRUD des annonces immobilières
+        & $\checkmark$ \\
+        \hline
+        Vérification de la cohérence et de l’exactitude des valeurs affichées dans les statistiques
+        & $\checkmark$ \\
+        \hline
+        Test du nombre d’investisseurs, d’annonces et d’estimations affiché dans le tableau de bord
+        & $\checkmark$ \\
+        \hline
+        Vérification de la cohérence des indicateurs liés aux performances du modèle IA
+        & $\checkmark$ \\
+        \hline
+        Test de l’interface frontend et vérification de l’affichage des différentes fonctionnalités
+        & $\checkmark$ \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Ces tests ont permis de valider les principales fonctionnalités du module d’administration et de vérifier la cohérence des données affichées. Ils ont également permis d’identifier et de corriger certains problèmes liés à l’interface frontend, tout en vérifiant le bon fonctionnement des opérations de gestion et des fonctionnalités d’intelligence artificielle.
+
+
+% ==================================================
+
+\section*{Conclusion}
+
+Ce sprint a permis de développer le module d’administration de la plateforme. Grâce à une authentification sécurisée et à un tableau de bord complet, l’administrateur dispose désormais des outils nécessaires pour gérer les investisseurs, contrôler les annonces immobilières, superviser les données collectées et suivre les performances du modèle d’intelligence artificielle. Cette couche d’administration constitue un élément essentiel pour garantir la stabilité, la sécurité et le bon fonctionnement global du système.
+% ==================================================
+% CONCLUSION GÉNÉRALE
+% ==================================================
+
+\chapter*{Conclusion générale}
+
+\addcontentsline{toc}{chapter}{Conclusion générale}
+
+Dans ce mémoire, nous avons présenté la conception et le développement de Rentvly, une plateforme web intelligente dédiée à l’analyse de la rentabilité locative des biens immobiliers. L’objectif principal du projet était de proposer une solution permettant aux investisseurs d’analyser plus facilement le potentiel d’un bien immobilier et de disposer d’informations pertinentes pour accompagner leur prise de décision.
+
+La réalisation de ce projet nous a permis de mettre en œuvre différentes compétences dans plusieurs domaines du développement informatique, notamment la conception d’applications web, la gestion et l’exploitation des données immobilières, ainsi que l’intégration de l’intelligence artificielle. La plateforme développée permet notamment d’estimer les prix de location à l’aide d’un modèle prédictif et de fournir différents indicateurs clés de performance (KPI) permettant d’évaluer le potentiel et la rentabilité d’un investissement immobilier.
+
+Le développement de la solution a été réalisé suivant une approche Agile basée sur l’organisation du projet en plusieurs sprints. Cette méthode a permis de progresser de manière structurée et itérative, depuis l’analyse des besoins et la conception de l’architecture jusqu'au développement des fonctionnalités principales et à l'intégration du modèle d’intelligence artificielle. Chaque sprint a ainsi contribué à l’évolution progressive de la plateforme et à l’amélioration de ses différentes fonctionnalités.
+
+Ce projet a également constitué une expérience enrichissante sur le plan technique et méthodologique. Il nous a permis de mieux comprendre les différentes étapes nécessaires à la réalisation d’une solution complète, depuis l’étude des besoins jusqu’à l’implémentation et l’intégration des différents composants du système. L’intégration de l’intelligence artificielle dans une application web représente également une dimension importante du projet, notamment à travers l’utilisation d’un modèle de prédiction destiné à fournir des estimations utiles aux investisseurs.
+
+Enfin, Rentvly constitue une base évolutive qui peut être améliorée et enrichie par de nouvelles fonctionnalités. Les perspectives d’évolution du projet sont présentées dans la section suivante.
+\section*{perspectives}
+\addcontentsline{toc}{chapter}{perspectives}
+
+Plusieurs évolutions peuvent être envisagées afin de faire évoluer Rentvly vers une plateforme immobilière plus performante et accessible aux investisseurs particuliers. Deux axes principaux sont retenus : l’amélioration du modèle d’intelligence artificielle et la mise en place d’un système d’abonnement.
+
+Une première perspective consiste à améliorer les performances du modèle d’intelligence artificielle utilisé pour l’estimation des loyers. Cela nécessitera notamment la collecte d’un volume plus important de données provenant de différentes sources, ainsi que l’intégration de nouvelles caractéristiques liées aux biens immobiliers et à leur environnement.
+
+Il serait également intéressant d’expérimenter d’autres modèles et algorithmes afin d’identifier une approche plus performante et mieux adaptée aux données immobilières. L’augmentation des ressources matérielles, notamment en CPU, RAM et éventuellement GPU, permettrait par ailleurs d’entraîner des modèles plus complexes et de réaliser davantage d’expérimentations. À terme, le modèle pourrait être régulièrement réentraîné avec les nouvelles données collectées afin d’améliorer progressivement la précision des estimations.
+
+La deuxième perspective concerne l’intégration d’un système d’abonnement afin de faire évoluer Rentvly vers une véritable plateforme B2C destinée aux investisseurs particuliers. L’intégration de \textit{Stripe} permettrait de gérer les paiements et les abonnements récurrents de manière sécurisée.
+
+Différents niveaux d’abonnement pourraient être proposés, avec des fonctionnalités et des quotas adaptés à chaque offre. Les fonctionnalités nécessitant davantage de ressources, notamment les analyses et estimations basées sur l’intelligence artificielle, pourraient être limitées selon le niveau d’abonnement. Cette approche permettrait à la fois de mieux contrôler l’utilisation des ressources et de proposer un service destiné directement aux investisseurs réels.
+
+Ces évolutions permettraient ainsi de renforcer les capacités d’analyse de Rentvly tout en préparant son passage vers une solution B2C complète d’aide à la décision dans le domaine de l’investissement immobilier.
+
+%bibliographie
+\input{bibliographie}
+
+% ==================================================
+% FIN DU DOCUMENT
+% ==================================================
+
+\end{document}

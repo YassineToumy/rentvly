@@ -45,11 +45,9 @@ class BieniciVentesScraper:
         self.delay = int(os.getenv("DELAY_BETWEEN_REQUESTS", 2))
         self.max_pages = int(os.getenv("MAX_PAGES", 100))
         self.items_per_page = int(os.getenv("ITEMS_PER_PAGE", 100))
-        self.property_types = [
-            t.strip()
-            for t in os.getenv("PROPERTY_TYPES", "house").split(",")
-            if t.strip()
-        ]
+        # Maisons uniquement — les appartements (flat) ont déjà été scrapés.
+        # PROPERTY_TYPES est ignoré volontairement pour éviter un re-scrape des flats.
+        self.property_types = ["house"]
 
         # Fourchettes de prix d'achat (seront subdivisées si nécessaire)
         self.initial_price_ranges = [
@@ -257,7 +255,7 @@ class BieniciVentesScraper:
         print("\n" + "=" * 60)
         print("SCRAPER BIEN'ICI — VENTES (filterType=buy)")
         print(f"Mongo: {self.db_name}.{self.collection_name}")
-        print(f"Types: {', '.join(self.property_types)}")
+        print("Types: house (maisons uniquement)")
         print("=" * 60)
 
         for ptype in self.property_types:

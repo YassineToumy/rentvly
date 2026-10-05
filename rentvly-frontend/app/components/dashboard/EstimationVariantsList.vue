@@ -21,10 +21,10 @@ function formatDate(iso: string): string {
 
 function getYieldColor(y: number | null): string {
   if (y === null) return 'text-gray-600 dark:text-gray-500'
-  if (y >= 7) return 'text-green-600 dark:text-green-400'
-  if (y >= 5) return 'text-emerald-600 dark:text-emerald-400'
-  if (y >= 3) return 'text-yellow-600 dark:text-yellow-400'
-  return 'text-red-500'
+  if (y >= 7) return 'text-emerald-800 dark:text-green-400'
+  if (y >= 5) return 'text-emerald-700 dark:text-emerald-400'
+  if (y >= 3) return 'text-amber-700 dark:text-yellow-500'
+  return 'text-red-700 dark:text-red-500'
 }
 </script>
 
@@ -33,11 +33,11 @@ function getYieldColor(y: number | null): string {
     <div
       v-for="(variant, index) in variants"
       :key="variant.id"
-      class="rounded-xl border border-gray-200 dark:border-gray-800/60 bg-gray-50 dark:bg-gray-800/30 p-4"
+      class="rounded-xl border border-gray-300/80 dark:border-gray-800/60 bg-[#f4f5f7] dark:bg-gray-800/30 p-4 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none"
     >
       <div class="flex items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
-          <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-500/15 text-primary-600 dark:text-primary-400 text-xs font-bold">
+          <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 dark:bg-primary-500/15 text-emerald-900 dark:text-primary-400 text-xs font-bold">
             {{ variants.length - index }}
           </span>
           <p class="text-sm font-medium text-gray-900 dark:text-white">
@@ -70,7 +70,7 @@ function getYieldColor(y: number | null): string {
           <p class="text-xs text-gray-600 dark:text-gray-500">Cashflow mensuel</p>
           <p
             class="font-semibold"
-            :class="variant.rentability.monthly_cashflow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'"
+            :class="variant.rentability.monthly_cashflow >= 0 ? 'text-emerald-800 dark:text-green-400' : 'text-red-700 dark:text-red-500'"
           >
             {{ formatCurrency(variant.rentability.monthly_cashflow) }}
           </p>

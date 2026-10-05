@@ -19,7 +19,12 @@ Route::prefix('v1')->group(function () {
 
     // ── Public ──
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:10,1');
+    Route::post('/resend-verification-code', [AuthController::class, 'resendVerificationCode'])->middleware('throttle:5,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+    Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode'])->middleware('throttle:10,1');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
     Route::get('/ventes', [VenteController::class, 'index']);
     Route::get('/ventes/stats', [\App\Http\Controllers\VenteStatsController::class, 'index']);
@@ -32,6 +37,9 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
+        Route::patch('/me', [AuthController::class, 'updateProfile']);
+        Route::patch('/me/password', [AuthController::class, 'updatePassword']);
+        Route::post('/me/avatar', [AuthController::class, 'updateAvatar']);
 
         Route::get('/estimations', [EstimationController::class, 'index']);
         Route::get('/estimations/by-listing/{listingId}', [EstimationController::class, 'byListing']);

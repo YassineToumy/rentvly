@@ -3,6 +3,8 @@ interface User {
   name: string
   email: string
   role: 'admin' | 'investor'
+  avatar?: string | null
+  avatar_url?: string | null
   created_at: string
 }
 
@@ -20,8 +22,30 @@ export function useAuth() {
     if (saved.value) token.value = saved.value
   }
 
+  async function fetchUser() {
+    if (!token.value) return
+    try {
+      const res = await $fetch<any>(`${apiBase}/me`, {
+        headers: authHeaders(),
+      })
+      if (res.success) user.value = normalizeUser(res.data)
+    } catch {
+      clearAuth()
+    }
+  }
+
+  function normalizeUser(u: User): User {
+    if (!u) return u
+    if (u.avatar_url) return u
+    if (u.avatar) {
+      const origin = apiBase.replace(/\/api\/v1\/?$/, '')
+      return { ...u, avatar_url: `${origin}/${u.avatar.replace(/^\//, '')}` }
+    }
+    return u
+  }
+
   function setAuth(u: User, t: string) {
-    user.value = u
+    user.value = normalizeUser(u)
     token.value = t
     useCookie('auth_token', { maxAge: 60 * 60 * 24 * 30 }).value = t
   }
@@ -34,6 +58,15 @@ export function useAuth() {
 
   function authHeaders(): Record<string, string> {
     return token.value ? { Authorization: `Bearer ${token.value}` } : {}
+  }
+
+  function postAuthRedirect(role?: string) {
+    const route = useRoute()
+    const redirect = route.query.redirect
+    if (typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')) {
+      return navigateTo(redirect)
+    }
+    return navigateTo(role === 'admin' ? '/admin' : '/dashboard')
   }
 
   async function register(firstName: string, lastName: string, email: string, password: string, passwordConfirmation: string) {
@@ -50,14 +83,55 @@ export function useAuth() {
           password_confirmation: passwordConfirmation,
         },
       })
+      if (res.requires_verification) {
+        await navigateTo(`/verify-email?email=${encodeURIComponent(res.email ?? email)}`)
+        return
+      }
       if (res.success) {
         setAuth(res.data.user, res.data.token)
-        navigateTo(res.data.user?.role === 'admin' ? '/admin' : '/dashboard')
+        await postAuthRedirect(res.data.user?.role)
       }
     } catch (e: any) {
       error.value = e?.data?.message || e?.data?.error || "Erreur lors de l'inscription."
     } finally {
       loading.value = false
+    }
+  }
+
+  async function verifyEmail(email: string, code: string) {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await $fetch<any>(`${apiBase}/verify-email`, {
+        method: 'POST',
+        body: { email, code },
+      })
+      if (res.success) {
+        setAuth(res.data.user, res.data.token)
+        await postAuthRedirect(res.data.user?.role)
+        return true
+      }
+      error.value = res.error || 'Code invalide ou expiré.'
+      return false
+    } catch (e: any) {
+      error.value = e?.data?.error || e?.data?.message || 'Code invalide ou expiré.'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function resendVerificationCode(email: string) {
+    error.value = null
+    try {
+      await $fetch<any>(`${apiBase}/resend-verification-code`, {
+        method: 'POST',
+        body: { email },
+      })
+      return true
+    } catch (e: any) {
+      error.value = e?.data?.error || e?.data?.message || "Impossible d'envoyer le code."
+      return false
     }
   }
 
@@ -71,9 +145,14 @@ export function useAuth() {
       })
       if (res.success) {
         setAuth(res.data.user, res.data.token)
-        navigateTo(res.data.user?.role === 'admin' ? '/admin' : '/dashboard')
+        await postAuthRedirect(res.data.user?.role)
       }
     } catch (e: any) {
+      // Compte non vérifié : rediriger vers la vérification 2FA
+      if (e?.data?.requires_verification) {
+        await navigateTo(`/verify-email?email=${encodeURIComponent(e.data.email ?? email)}`)
+        return
+      }
       error.value = e?.data?.error || e?.data?.message || 'Email ou mot de passe incorrect.'
     } finally {
       loading.value = false
@@ -91,18 +170,6 @@ export function useAuth() {
     navigateTo('/')
   }
 
-  async function fetchUser() {
-    if (!token.value) return
-    try {
-      const res = await $fetch<any>(`${apiBase}/me`, {
-        headers: authHeaders(),
-      })
-      if (res.success) user.value = res.data
-    } catch {
-      clearAuth()
-    }
-  }
-
   const isAuthenticated = computed(() => !!token.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
 
@@ -114,6 +181,8 @@ export function useAuth() {
     isAuthenticated,
     isAdmin,
     register,
+    verifyEmail,
+    resendVerificationCode,
     login,
     logout,
     fetchUser,

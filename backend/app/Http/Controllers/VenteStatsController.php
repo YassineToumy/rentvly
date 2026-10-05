@@ -113,7 +113,18 @@ class VenteStatsController extends Controller
         // Always qualify ventes.* — joins (departements, regions) also expose code_region.
         return Vente::query()
             ->when($request->input('type'), fn ($q, $t) => $q->where('ventes.property_type', $t))
-            ->when($request->input('region'), fn ($q, $r) => $q->where('ventes.code_region', $r))
+            ->when($request->filled('region'), function ($q) use ($request) {
+                $region = (string) $request->input('region');
+                // Prefer ventes.code_region; fallback via department when code_region is null.
+                $q->where(function ($inner) use ($region) {
+                    $inner->where('ventes.code_region', $region)
+                        ->orWhereIn('ventes.department_code', function ($sub) use ($region) {
+                            $sub->select('code_departement')
+                                ->from('departements')
+                                ->where('code_region', $region);
+                        });
+                });
+            })
             ->when($request->input('department'), fn ($q, $d) => $q->where('ventes.department_code', $d))
             ->when($request->input('city'), function ($q, $c) {
                 $q->where('ventes.city', 'ilike', trim($c));
@@ -129,21 +140,31 @@ class VenteStatsController extends Controller
         $regions = Region::query()
             ->orderBy('nom')
             ->get(['code_region', 'nom'])
-            ->map(fn ($r) => ['value' => $r->code_region, 'label' => $r->nom]);
+            ->map(fn ($r) => ['value' => (string) $r->code_region, 'label' => $r->nom]);
 
         $departments = Departement::query()
-            ->when($request->input('region'), fn ($q, $r) => $q->where('code_region', $r))
+            ->when($request->filled('region'), fn ($q) => $q->where('code_region', (string) $request->input('region')))
             ->orderBy('nom')
             ->get(['code_departement', 'nom', 'code_region'])
             ->map(fn ($d) => [
-                'value'  => $d->code_departement,
+                'value'  => (string) $d->code_departement,
                 'label'  => $d->nom.' ('.$d->code_departement.')',
-                'region' => $d->code_region,
+                'region' => (string) $d->code_region,
             ]);
 
         $citiesQuery = Vente::query()
             ->when($request->input('type'), fn ($q, $t) => $q->where('ventes.property_type', $t))
-            ->when($request->input('region'), fn ($q, $r) => $q->where('ventes.code_region', $r))
+            ->when($request->filled('region'), function ($q) use ($request) {
+                $region = (string) $request->input('region');
+                $q->where(function ($inner) use ($region) {
+                    $inner->where('ventes.code_region', $region)
+                        ->orWhereIn('ventes.department_code', function ($sub) use ($region) {
+                            $sub->select('code_departement')
+                                ->from('departements')
+                                ->where('code_region', $region);
+                        });
+                });
+            })
             ->when($request->input('department'), fn ($q, $d) => $q->where('ventes.department_code', $d))
             ->whereNotNull('ventes.city')
             ->where('ventes.city', '!=', '')

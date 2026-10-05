@@ -1,0 +1,99 @@
+%% Diagramme de classes de conception — Sprint 2 : Gestion des annonces
+%% Catalogue public + CRUD admin + import + lien estimation (listing_id)
+%% Style compact (Overleaf), associations sans cycle
+
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'fontFamily': 'Arial, Helvetica, sans-serif',
+    'fontSize': '14px',
+    'background': '#ffffff',
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'secondaryColor': '#ffffff',
+    'tertiaryColor': '#ffffff',
+    'mainBkg': '#ffffff',
+    'textColor': '#000000',
+    'classText': '#000000'
+  }
+}}%%
+
+classDiagram
+    direction LR
+
+    class Annonce {
+        +int id
+        +string external_id
+        +string title
+        +string property_type
+        +bool is_new_property
+        +int price
+        +decimal price_per_sqm
+        +decimal surface_area
+        +int rooms_quantity
+        +json photos
+        +string city
+        +string postal_code
+        +string code_commune FK
+        +string department_code FK
+        +string code_region FK
+        +datetime publication_date
+    }
+
+    class Region {
+        +string code_region PK
+        +string nom
+    }
+
+    class Departement {
+        +string code_departement PK
+        +string nom
+        +string code_region FK
+    }
+
+    class Commune {
+        +string code_commune PK
+        +string nom
+        +string code_departement FK
+    }
+
+    class Estimation {
+        +int id
+        +int user_id FK
+        +string listing_id
+        +float predicted_rent
+        +float net_yield
+        +bool is_purchased
+    }
+
+    class ControleurVente {
+        +index(filtres) liste
+        +show(id) detail
+    }
+
+    class ControleurAdminVente {
+        +index() liste
+        +show(id) detail
+        +store() creer
+        +update(id) modifier
+        +destroy(id) supprimer
+    }
+
+    class ImportVentes {
+        +handle() importer
+    }
+
+    %% Localisation (arbre, pas de cycle)
+    Region "1" --> "*" Departement : contient
+    Departement "1" --> "*" Commune : contient
+    Annonce "*" --> "0..1" Commune : localisee_dans
+
+    %% Couche conception (controleurs / import)
+    ControleurVente ..> Annonce : consulte
+    ControleurAdminVente ..> Annonce : CRUD
+    ImportVentes ..> Annonce : alimente
+
+    %% Lien faible estimation ↔ annonce (string listing_id, pas de FK)
+    Estimation ..> Annonce : listing_id

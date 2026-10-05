@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import type { AuthGateReason } from '../composables/useAuthGate'
+
 const route = useRoute()
 const { user, isAuthenticated, isAdmin, logout, fetchUser } = useAuth()
+const { requireAuth } = useAuthGate()
 const colorMode = useColorMode()
 
 useHead({
@@ -11,15 +14,22 @@ onMounted(() => {
   if (isAuthenticated.value && !user.value) fetchUser()
 })
 
-const navItems = [
+type NavItem = {
+  label: string
+  to: string
+  icon: string
+  authReason?: AuthGateReason
+}
+
+const navItems: NavItem[] = [
   { label: 'Accueil', to: '/', icon: 'i-lucide-home' },
   { label: 'Biens en vente', to: '/listings', icon: 'i-lucide-building' },
-  { label: 'Statistiques', to: '/statistiques', icon: 'i-lucide-chart-column' },
+  { label: 'Statistiques', to: '/statistiques', icon: 'i-lucide-chart-column', authReason: 'stats' },
   { label: 'Estimer', to: '/predict', icon: 'i-lucide-calculator' },
 ]
 
 const authNavItems = computed(() => {
-  const items = [
+  const items: NavItem[] = [
     { label: 'Dashboard', to: '/dashboard', icon: 'i-lucide-layout-dashboard' },
     { label: 'Biens en vente', to: '/listings', icon: 'i-lucide-building' },
     { label: 'Statistiques', to: '/statistiques', icon: 'i-lucide-chart-column' },
@@ -45,11 +55,24 @@ const isLightMode = computed(() => colorMode.preference === 'light')
 function toggleColorMode() {
   colorMode.preference = isLightMode.value ? 'dark' : 'light'
 }
+
+function onNavClick(event: Event, item: NavItem) {
+  if (item.authReason && !requireAuth(item.authReason)) {
+    event.preventDefault()
+  }
+  mobileMenuOpen.value = false
+}
+
+function onGuestLink(event: Event, reason: AuthGateReason) {
+  if (!requireAuth(reason)) {
+    event.preventDefault()
+  }
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-    <header class="bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl app-border border-b sticky top-0 z-50">
+  <div class="min-h-screen bg-[#e8eaed] dark:bg-gray-950 dark:text-gray-100">
+    <header class="app-header backdrop-blur-xl sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <div class="flex items-center gap-8">
           <NuxtLink to="/" class="flex items-center">
@@ -67,6 +90,7 @@ function toggleColorMode() {
               :to="item.to"
               class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
               :class="route.path === item.to ? 'app-nav-active' : 'app-nav-inactive'"
+              @click="onNavClick($event, item)"
             >
               <UIcon :name="item.icon" class="size-4" />
               {{ item.label }}
@@ -102,8 +126,14 @@ function toggleColorMode() {
                 icon="i-lucide-settings"
                 aria-label="Paramètres"
               />
-              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-xs font-bold text-gray-900 dark:text-white">
-                {{ userInitial }}
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-xs font-bold text-gray-900 dark:text-white overflow-hidden">
+                <img
+                  v-if="user?.avatar_url"
+                  :src="user.avatar_url"
+                  alt=""
+                  class="size-full object-cover"
+                >
+                <template v-else>{{ userInitial }}</template>
               </div>
               <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-log-out" @click="logout">
                 Déconnexion
@@ -117,7 +147,7 @@ function toggleColorMode() {
         </button>
       </div>
 
-      <div v-if="mobileMenuOpen" class="md:hidden app-border border-t bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl">
+      <div v-if="mobileMenuOpen" class="md:hidden app-border border-t bg-[#f4f5f7]/95 dark:bg-gray-950/95 backdrop-blur-xl">
         <div class="px-4 py-4 space-y-1">
           <NuxtLink
             v-for="item in currentNav"
@@ -125,7 +155,7 @@ function toggleColorMode() {
             :to="item.to"
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
             :class="route.path === item.to ? 'app-nav-active' : 'app-nav-inactive'"
-            @click="mobileMenuOpen = false"
+            @click="onNavClick($event, item)"
           >
             <UIcon :name="item.icon" class="size-4" />
             {{ item.label }}
@@ -140,7 +170,7 @@ function toggleColorMode() {
               <NuxtLink to="/login" class="block px-3 py-2.5 rounded-lg text-sm app-nav-inactive" @click="mobileMenuOpen = false">
                 Connexion
               </NuxtLink>
-              <NuxtLink to="/register" class="block px-3 py-2.5 rounded-lg text-sm text-primary-600 dark:text-primary-400 app-surface-hover" @click="mobileMenuOpen = false">
+              <NuxtLink to="/register" class="block px-3 py-2.5 rounded-lg text-sm text-emerald-800 dark:text-primary-400 app-surface-hover" @click="mobileMenuOpen = false">
                 Créer un compte
               </NuxtLink>
             </template>
@@ -163,7 +193,7 @@ function toggleColorMode() {
       <slot />
     </main>
 
-    <footer class="app-border border-t mt-20">
+    <footer class="app-footer mt-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6">
           <div class="flex items-center">
@@ -173,17 +203,30 @@ function toggleColorMode() {
               class="h-8 w-auto object-contain"
             >
           </div>
-          <div class="flex items-center gap-6 text-xs app-muted">
-            <NuxtLink to="/" class="hover:opacity-80 transition-opacity">Accueil</NuxtLink>
-            <NuxtLink to="/statistiques" class="hover:opacity-80 transition-opacity">Statistiques</NuxtLink>
-            <NuxtLink to="/predict" class="hover:opacity-80 transition-opacity">Estimer</NuxtLink>
-            <span>Données Leboncoin · Modèle CatBoost</span>
+          <div class="flex items-center gap-6 text-sm app-muted font-medium">
+            <NuxtLink to="/" class="hover:text-gray-950 dark:hover:text-white transition-colors">Accueil</NuxtLink>
+            <NuxtLink
+              to="/statistiques"
+              class="hover:text-gray-950 dark:hover:text-white transition-colors"
+              @click="onGuestLink($event, 'stats')"
+            >
+              Statistiques
+            </NuxtLink>
+            <NuxtLink
+              to="/predict"
+              class="hover:text-gray-950 dark:hover:text-white transition-colors"
+            >
+              Estimer
+            </NuxtLink>
+            <span class="text-gray-600 dark:text-gray-500">Données Leboncoin · Modèle CatBoost</span>
           </div>
-          <p class="text-xs text-gray-600 dark:text-gray-500 dark:text-gray-600">
+          <p class="text-sm text-gray-700 dark:text-gray-500">
             © 2026 Rentvly
           </p>
         </div>
       </div>
     </footer>
+
+    <AuthRequiredModal />
   </div>
 </template>

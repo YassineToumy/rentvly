@@ -114,8 +114,18 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       SESSION_DRIVER: ${SESSION_DRIVER:-database}
       SESSION_LIFETIME: ${SESSION_LIFETIME:-120}
+      MAIL_MAILER: ${MAIL_MAILER:-smtp}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Rentvly}
     ports:
       - "${BACKEND_HOST_PORT:-8080}:80"
+    volumes:
+      # Persiste les photos de profil hors de l'image (survit au rebuild)
+      - ./backend/public/avatars:/app/public/avatars
     depends_on:
       postgres:
         condition: service_healthy

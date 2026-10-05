@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const apiBase = useApiBase()
 const route = useRoute()
+const { requireAuth } = useAuthGate()
 
 const properties = ref<any[]>([])
 const loading = ref(false)
@@ -73,22 +74,36 @@ const typeLabel = (t: string | null) => {
 }
 
 const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop'
+
+function goPredict() {
+  navigateTo('/predict')
+}
+
+function goAnalyse(id: number | string) {
+  if (!requireAuth('estimate')) return
+  navigateTo(`/listings/${id}?analyse=1`)
+}
 </script>
 
 <template>
-  <div class="min-h-screen">
-    <!-- HEADER -->
-    <div class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+  <div class="min-h-screen bg-[#e8eaed] dark:bg-gray-950">
+    <div class="border-b border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-950 shadow-[0_2px_10px_rgba(15,23,42,0.06)] dark:shadow-none">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h1 class="text-3xl font-bold text-black dark:text-white">Biens en vente</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-500">
+            <h1 class="text-3xl font-bold text-gray-950 dark:text-white">Biens en vente</h1>
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-400">
               <template v-if="loading">Chargement...</template>
               <template v-else>{{ meta.total }} bien{{ meta.total > 1 ? 's' : '' }} · Page {{ meta.current_page }}/{{ meta.last_page }}</template>
             </p>
           </div>
-          <UButton to="/predict" variant="outline" color="neutral" icon="i-lucide-calculator" size="sm">
+          <UButton
+            variant="outline"
+            color="neutral"
+            icon="i-lucide-calculator"
+            size="sm"
+            @click="goPredict"
+          >
             Estimer un loyer
           </UButton>
         </div>
@@ -98,7 +113,7 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
       <!-- FILTERS -->
-      <div class="flex flex-col lg:flex-row gap-4 mb-8 p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div class="flex flex-col lg:flex-row gap-4 mb-8 p-4 rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none">
         <div class="flex-1">
           <UInput :model-value="searchCity" @update:model-value="onSearchInput" placeholder="Rechercher une ville ou code postal..." icon="i-lucide-search" size="md" />
         </div>
@@ -108,7 +123,7 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
             v-for="opt in [{ value: 'all', label: 'Tous' }, { value: 'flat', label: 'Appartements' }, { value: 'house', label: 'Maisons' }]"
             :key="opt.value"
             class="px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap"
-            :class="selectedType === opt.value ? 'bg-white dark:bg-gray-800 text-black dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-700 dark:text-gray-300'"
+            :class="selectedType === opt.value ? 'bg-[#f4f5f7] dark:bg-gray-800 text-gray-950 dark:text-white shadow-sm' : 'text-gray-700 dark:text-gray-400 hover:text-gray-950 dark:hover:text-gray-200'"
             @click="selectedType = opt.value"
           >{{ opt.label }}</button>
         </div>
@@ -134,7 +149,7 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
       <!-- LOADING -->
       <div v-if="loading && properties.length === 0" class="text-center py-20">
         <UIcon name="i-lucide-loader-2" class="size-8 text-gray-600 dark:text-gray-400 animate-spin mx-auto mb-3" />
-        <p class="text-sm text-gray-600 dark:text-gray-500">Chargement des biens...</p>
+        <p class="text-sm text-gray-700 dark:text-gray-400">Chargement des biens...</p>
       </div>
 
       <!-- EMPTY -->
@@ -143,7 +158,7 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
           <UIcon name="i-lucide-search-x" class="size-8 text-gray-600 dark:text-gray-400" />
         </div>
         <h3 class="text-lg font-semibold text-black dark:text-white mb-2">Aucun bien trouvé</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-500 mb-6">Essayez de modifier vos filtres.</p>
+        <p class="text-sm text-gray-700 dark:text-gray-400 mb-6">Essayez de modifier vos filtres.</p>
         <UButton variant="outline" color="neutral" icon="i-lucide-rotate-ccw" @click="clearFilters">Réinitialiser</UButton>
       </div>
 
@@ -153,7 +168,7 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
           v-for="p in properties"
           :key="p.id"
           :to="`/listings/${p.id}`"
-          class="group flex flex-col sm:flex-row rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:border-gray-300 dark:hover:border-gray-300 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer no-underline"
+          class="group flex flex-col sm:flex-row rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-[0_4px_16px_rgba(15,23,42,0.08)] hover:shadow-[0_8px_24px_rgba(15,23,42,0.12)] dark:shadow-none hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-300 cursor-pointer no-underline"
         >
           <!-- Image -->
           <div class="relative w-full sm:w-56 h-44 sm:h-auto flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800">
@@ -182,7 +197,7 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
                   <h3 class="text-sm font-semibold text-black dark:text-white leading-snug group-hover:underline underline-offset-2 truncate">{{ p.title }}</h3>
                   <div class="flex items-center gap-1.5 mt-1">
                     <UIcon name="i-lucide-map-pin" class="size-3 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-                    <span class="text-xs text-gray-600 dark:text-gray-500 truncate">{{ p.city }} · {{ p.postal_code }}<template v-if="p.department_name"> · {{ p.department_name }}</template></span>
+                    <span class="text-xs text-gray-700 dark:text-gray-400 truncate">{{ p.city }} · {{ p.postal_code }}<template v-if="p.department_name"> · {{ p.department_name }}</template></span>
                   </div>
                 </div>
                 <div class="text-right flex-shrink-0">
@@ -191,7 +206,7 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
                 </div>
               </div>
 
-              <div class="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-500 dark:text-gray-400 mt-3">
+              <div class="flex flex-wrap items-center gap-3 text-xs text-gray-700 dark:text-gray-400 mt-3">
                 <span class="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800">{{ typeLabel(p.property_type) }}</span>
                 <div v-if="p.surface_area" class="flex items-center gap-1">
                   <UIcon name="i-lucide-ruler" class="size-3.5" />
@@ -221,7 +236,7 @@ const fallbackImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2
                   color="primary"
                   size="xs"
                   icon="i-lucide-calculator"
-                  @click.prevent.stop="navigateTo(`/listings/${p.id}?analyse=1`)"
+                  @click.prevent.stop="goAnalyse(p.id)"
                 >
                   Analyser
                 </UButton>

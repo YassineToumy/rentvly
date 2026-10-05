@@ -142,9 +142,25 @@ def owner_info(doc):
     }
 
 
+def department_from_postal(postal: str) -> str:
+    """Derive French department code from postal code (incl. DOM-TOM / Corse)."""
+    if not postal:
+        return ""
+    if postal.startswith(("97", "98")) and len(postal) >= 3:
+        return postal[:3]
+    two = postal[:2]
+    if two == "20":
+        try:
+            n = int(postal)
+        except ValueError:
+            return two
+        return "2B" if n >= 20200 else "2A"
+    return two
+
+
 def clean_document(doc):
     district = extract_district(doc)
-    postal = str(doc["postalCode"])
+    postal = str(safe_get(doc, "postalCode", "") or "").strip()
     surface = to_number(doc.get("surfaceArea"))
     rooms = to_number(doc.get("roomsQuantity"))
     price = to_number(doc.get("price"))
@@ -164,11 +180,15 @@ def clean_document(doc):
     if not code_insee and isinstance(blur, dict):
         code_insee = blur.get("codeInsee") or blur.get("code_insee")
 
+    property_type = doc.get("propertyType")
+    if property_type not in ("flat", "house"):
+        property_type = "flat"
+
     return {
         "id": doc["id"],
         "title": safe_get(doc, "title", ""),
         "description": safe_get(doc, "description"),
-        "property_type": doc["propertyType"],
+        "property_type": property_type,
         "is_new_property": bool(safe_get(doc, "newProperty", False)),
         "price": int(price),
         "price_per_sqm": round(ppm2, 2) if ppm2 is not None else None,
@@ -191,7 +211,7 @@ def clean_document(doc):
         "equipment_score": equipment_score(doc),
         "city": doc["city"],
         "postal_code": postal,
-        "department_code": postal[:2] if len(postal) >= 2 else postal,
+        "department_code": department_from_postal(postal),
         "district_name": district.get("district_name"),
         "code_insee": code_insee,
         "latitude": safe_get(doc, "latitude"),
@@ -289,12 +309,18 @@ def run_pipeline(source, clean):
         stats["duplicates"] += dup
 
     rejected = total - stats["inserted"] - stats["duplicates"]
+    by_type = {
+        "house": clean.count_documents({"property_type": "house"}),
+        "flat": clean.count_documents({"property_type": "flat"}),
+    }
     print(f"\n\n{'=' * 60}")
     print("RÉSULTATS NETTOYAGE VENTES")
     print(f"{'=' * 60}")
     print(f"  Total:     {total}")
     print(f"  Valides:   {stats['inserted']}")
     print(f"  Rejetés:   {rejected}")
+    print(f"  Dont maisons:      {by_type['house']}")
+    print(f"  Dont appartements: {by_type['flat']}")
     for key in (
         "prix_invalide",
         "surface_invalide",
@@ -307,6 +333,8 @@ def run_pipeline(source, clean):
             print(f"    - {key}: {stats[key]}")
     print(f"  Collection: {CLEAN_COLLECTION}")
     print(f"{'=' * 60}\n")
+    print("Ensuite: cd ../backend && php artisan import:ventes")
+    print("Le site lit PostgreSQL via GET /api/v1/ventes?type=house|flat\n")
 
 
 def main():

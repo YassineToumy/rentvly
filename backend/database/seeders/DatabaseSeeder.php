@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Test User',
                 'password' => Hash::make('password'),
                 'role' => 'investor',
+                'email_verified_at' => now(),
             ]
         );
 
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Admin Rentvly',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
+                'email_verified_at' => now(),
             ]
         );
     }

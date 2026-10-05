@@ -1,14 +1,12 @@
-%% Diagramme de séquence — Tableau de bord investisseur
-%% et gestion des investissements (Rentvly)
-%% Optimisé impression / Overleaf (contraste élevé, gros texte, labels courts)
-%% Export conseillé :
-%% npx @mermaid-js/mermaid-cli -i conception/uml/07-sequence-dashboard-investisseur.mmd -o conception/uml/07-sequence-dashboard-investisseur.png -b white -s 3 -w 2400 -C conception/uml/sequence-print.css
+%% Diagramme de séquence — Annonces + Dashboard investisseur (sprints fusionnés)
+%% Uniquement les actions utilisateur branchées au backend
+%% npx @mermaid-js/mermaid-cli -i conception/uml/07-sequence-dashboard-investisseur.mmd -o conception/uml/07-sequence-dashboard-investisseur.png -b white -s 3 --size 2400 -C conception/uml/sequence-print.css
 
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'fontFamily': 'Arial Black, Arial, Helvetica, sans-serif',
-    'fontSize': '24px',
+    'fontFamily': 'Arial, Helvetica, sans-serif',
+    'fontSize': '22px',
     'background': '#ffffff',
     'mainBkg': '#ffffff',
     'textColor': '#000000',
@@ -28,26 +26,26 @@
     'labelBoxBorderColor': '#000000',
     'labelTextColor': '#000000',
     'loopTextColor': '#000000',
-    'noteBkgColor': '#ffffff',
+    'noteBkgColor': '#f5f5f5',
     'noteTextColor': '#000000',
     'noteBorderColor': '#000000',
     'activationBkgColor': '#d0d0d0',
     'activationBorderColor': '#000000',
     'sequenceNumberColor': '#ffffff'
   },
-  'themeCSS': 'text, tspan, .actor, .messageText, .noteText, .loopText, .labelText, .sequenceNumber { font-weight: 700 !important; font-family: Arial, Helvetica, sans-serif !important; }',
+  'themeCSS': 'text, tspan, .actor, .messageText, .noteText, .loopText, .labelText, .titleText { font-weight: 900 !important; font-family: Arial Black, Arial, Helvetica, sans-serif !important; }',
   'sequence': {
     'diagramMarginX': 40,
-    'diagramMarginY': 20,
-    'actorMargin': 90,
-    'width': 200,
-    'height': 62,
-    'boxMargin': 14,
-    'boxTextMargin': 10,
-    'noteMargin': 14,
-    'messageMargin': 52,
+    'diagramMarginY': 16,
+    'actorMargin': 100,
+    'width': 190,
+    'height': 52,
+    'boxMargin': 10,
+    'boxTextMargin': 6,
+    'noteMargin': 10,
+    'messageMargin': 36,
     'mirrorActors': false,
-    'bottomMarginAdj': 10,
+    'bottomMarginAdj': 8,
     'useMaxWidth': false,
     'rightAngles': false,
     'showSequenceNumbers': false
@@ -58,69 +56,45 @@ sequenceDiagram
     actor C as Client
     participant S as Site
     participant W as Serveur
-    participant D as Base de données
+    participant D as BDD
 
-    Note over C,S: Token Sanctum requis
+    rect rgb(245, 245, 245)
+    Note over C,D: 1 — Catalogue annonces
+    C->>+S: Liste / filtre / détail
+    S->>+W: GET /ventes ou /ventes/{id}
+    W->>+D: Charge annonces
+    D-->>-W: Résultats
+    W-->>-S: JSON
+    S-->>-C: Affiche catalogue / fiche
+    end
 
-    alt Accéder au tableau de bord
-        C->>+S: Ouvre /dashboard
-        S->>S: Vérifie le token
-        alt Token absent
-            S-->>C: Redirige /login
-        else Token présent
-            S->>+W: GET /estimations
-            W->>W: Vérifie Sanctum
-            W->>+D: Charge estimations (racines)
-            D-->>-W: liste
-            W->>W: Calcule stats + ROI achetés
-            W-->>-S: stats + estimations
-            S-->>-C: Affiche le dashboard
-        end
+    rect rgb(245, 245, 245)
+    Note over C,D: 2 — Estimer depuis une annonce (token)
+    C->>+S: Lance l'estimation
+    S->>+W: POST /predict + /rentability
+    W-->>-S: Loyer + rendement
+    S->>+W: POST /estimations (listing_id)
+    W->>+D: Sauve estimation
+    D-->>-W: OK
+    W-->>-S: Estimation créée
+    S-->>-C: Ouvre la fiche estimation
+    end
 
-    else Consulter une estimation
-        C->>+S: Ouvre /dashboard/estimations/{id}
-        S->>+W: GET /estimations/{id}
-        W->>W: Vérifie le propriétaire
-        W->>+D: Charge estimation + variantes
-        D-->>-W: détail
-        opt Bien marqué acheté
-            W->>W: Calcule projections ROI
-            Note over W: 1 / 10 / 20 ans
-        end
-        W-->>-S: estimation (+ ROI)
-        S-->>-C: Affiche la fiche
+    rect rgb(245, 245, 245)
+    Note over C,D: 3 — Dashboard investisseur (token)
+    C->>+S: Ouvre /dashboard
+    S->>+W: GET /estimations
+    W->>+D: Liste + stats
+    D-->>-W: Données
+    W-->>-S: JSON
+    S-->>-C: Affiche dashboard
 
-    else Marquer comme acheté
-        C->>+S: Clique « Marquer acheté »
-        S->>+W: PATCH /estimations/{id}
-        Note over S,W: is_purchased = true
-        W->>W: Prix d'achat présent ?
-        alt Prix manquant
-            W-->>S: 422 erreur
-            S-->>C: « Prix d'achat requis »
-        else Prix OK
-            W->>+D: MAJ statut + date d'achat
-            D-->>-W: OK
-            W->>W: Calcule projections ROI
-            W-->>-S: estimation + ROI
-            S-->>-C: Affiche statut acheté
-        end
-
-    else Retirer le statut acheté
-        C->>+S: Clique « Retirer »
-        S->>+W: PATCH /estimations/{id}
-        Note over S,W: is_purchased = false
-        W->>+D: MAJ statut (date nulle)
+    alt Consulter / acheter / supprimer
+        C->>+S: Action sur une estimation
+        S->>+W: GET | PATCH | DELETE /estimations/{id}
+        W->>+D: Lit / met à jour / supprime
         D-->>-W: OK
-        W-->>-S: estimation
-        S-->>-C: Affiche statut retiré
-
-    else Supprimer une estimation
-        C->>+S: Clique « Supprimer »
-        S->>+W: DELETE /estimations/{id}
-        W->>W: Vérifie le propriétaire
-        W->>+D: Supprime estimation
-        D-->>-W: OK
-        W-->>-S: succès
-        S-->>-C: Retour /dashboard
+        W-->>-S: Réponse
+        S-->>-C: Met à jour l'affichage
+    end
     end

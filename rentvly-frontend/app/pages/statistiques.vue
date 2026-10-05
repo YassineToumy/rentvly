@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const apiBase = useApiBase()
+const { isAuthenticated } = useAuth()
 
 type CityRow = {
   city: string
@@ -68,36 +69,24 @@ const error = ref<string | null>(null)
 const stats = ref<StatsPayload | null>(null)
 
 const typeItems = [
-  { label: 'Tous les types', value: '' },
   { label: 'Appartements', value: 'flat' },
   { label: 'Maisons', value: 'house' },
 ]
 const priceItems = [
-  { label: 'Tous les prix', value: '' },
   { label: '< 150 000 €', value: 'under150' },
   { label: '150–250 k€', value: '150_250' },
   { label: '250–400 k€', value: '250_400' },
   { label: '> 400 000 €', value: 'over400' },
 ]
 const surfaceItems = [
-  { label: 'Toutes surfaces', value: '' },
   { label: '< 50 m²', value: 'under50' },
   { label: '50–90 m²', value: '50_90' },
   { label: '> 90 m²', value: 'over90' },
 ]
 
-const regionItems = computed(() => [
-  { label: 'Toute la France', value: '' },
-  ...(stats.value?.filter_options.regions || []),
-])
-const departmentItems = computed(() => [
-  { label: 'Tous les départements', value: '' },
-  ...(stats.value?.filter_options.departments || []),
-])
-const cityItems = computed(() => [
-  { label: 'Toutes les villes', value: '' },
-  ...(stats.value?.filter_options.cities || []),
-])
+const regionItems = computed(() => stats.value?.filter_options.regions || [])
+const departmentItems = computed(() => stats.value?.filter_options.departments || [])
+const cityItems = computed(() => stats.value?.filter_options.cities || [])
 
 function priceParams() {
   if (selectedPrice.value === 'under150') return { max_price: '150000' }
@@ -155,7 +144,9 @@ watch(
   scheduleFetch,
 )
 
-onMounted(fetchStats)
+onMounted(() => {
+  if (isAuthenticated.value) fetchStats()
+})
 
 function resetFilters() {
   selectedType.value = ''
@@ -231,8 +222,15 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
 </script>
 
 <template>
-  <div class="min-h-screen">
-    <div class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+  <AuthLockedState
+    v-if="!isAuthenticated"
+    reason="stats"
+    title="Statistiques réservées aux membres"
+    description="Connectez-vous pour explorer les statistiques du marché immobilier."
+    icon="i-lucide-chart-column"
+  />
+  <div v-else class="min-h-screen bg-[#e8eaed] dark:bg-gray-950">
+    <div class="border-b border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-950 shadow-[0_2px_10px_rgba(15,23,42,0.06)] dark:shadow-none">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-5">
         <div>
           <h1 class="text-3xl font-bold text-black dark:text-white">Statistiques</h1>
@@ -241,13 +239,43 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-          <USelect v-model="selectedType" :items="typeItems" value-key="value" class="w-full" />
-          <USelect v-model="selectedRegion" :items="regionItems" value-key="value" class="w-full" />
-          <USelect v-model="selectedDepartment" :items="departmentItems" value-key="value" class="w-full" />
-          <USelect v-model="selectedCity" :items="cityItems" value-key="value" class="w-full" />
-          <USelect v-model="selectedPrice" :items="priceItems" value-key="value" class="w-full" />
-          <USelect v-model="selectedSurface" :items="surfaceItems" value-key="value" class="w-full" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <StatsFilterSelect
+            v-model="selectedType"
+            label="Type"
+            placeholder="Tous les types"
+            :items="typeItems"
+          />
+          <StatsFilterSelect
+            v-model="selectedRegion"
+            label="Région"
+            placeholder="Toute la France"
+            :items="regionItems"
+          />
+          <StatsFilterSelect
+            v-model="selectedDepartment"
+            label="Département"
+            placeholder="Tous les départements"
+            :items="departmentItems"
+          />
+          <StatsFilterSelect
+            v-model="selectedCity"
+            label="Ville"
+            placeholder="Toutes les villes"
+            :items="cityItems"
+          />
+          <StatsFilterSelect
+            v-model="selectedPrice"
+            label="Prix"
+            placeholder="Tous les prix"
+            :items="priceItems"
+          />
+          <StatsFilterSelect
+            v-model="selectedSurface"
+            label="Surface"
+            placeholder="Toutes surfaces"
+            :items="surfaceItems"
+          />
         </div>
         <div class="flex justify-end">
           <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-rotate-ccw" @click="resetFilters">
@@ -275,10 +303,10 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
           <div
             v-for="kpi in kpis"
             :key="kpi.label"
-            class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5"
+            class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 p-5 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none"
           >
             <div class="w-9 h-9 rounded-lg bg-primary-500/10 flex items-center justify-center mb-4">
-              <UIcon :name="kpi.icon" class="size-4 text-primary-500" />
+              <UIcon :name="kpi.icon" class="size-4 text-emerald-800 dark:text-primary-400" />
             </div>
             <p class="text-2xl font-semibold tracking-tight text-black dark:text-white">{{ kpi.value }}</p>
             <p class="text-sm font-medium mt-1">{{ kpi.label }}</p>
@@ -287,12 +315,12 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none p-5">
             <h2 class="text-sm font-semibold">Évolution du prix moyen</h2>
             <p class="text-xs text-gray-500 mb-3">Courbe mensuelle (24 derniers mois)</p>
             <StatsLineChart :labels="timelineLabels" :values="timelinePrices" :format-tick="formatCompact" />
           </section>
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none p-5">
             <h2 class="text-sm font-semibold">Volume d'annonces</h2>
             <p class="text-xs text-gray-500 mb-3">Nombre de biens publiés par mois</p>
             <StatsLineChart :labels="timelineLabels" :values="timelineListings" color="#0ea5e9" :format-tick="formatNumber" />
@@ -300,12 +328,12 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none p-5">
             <h2 class="text-sm font-semibold">Répartition selon le prix</h2>
             <p class="text-xs text-gray-500 mb-3">Courbe du nombre d'annonces par tranche de 25 k€</p>
             <StatsLineChart :labels="priceCurveLabels" :values="priceCurveValues" color="#f59e0b" :format-tick="formatNumber" />
           </section>
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none p-5">
             <h2 class="text-sm font-semibold">Prix moyen selon le département</h2>
             <p class="text-xs text-gray-500 mb-3">Les 12 départements les plus chers du filtre</p>
             <StatsLineChart :labels="deptLabels" :values="deptPrices" color="#8b5cf6" :format-tick="formatCompact" />
@@ -313,18 +341,18 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none p-5">
             <h2 class="text-sm font-semibold">Annonces selon la surface</h2>
             <StatsLineChart :labels="surfaceLabels" :values="surfaceValues" color="#14b8a6" :format-tick="formatNumber" />
           </section>
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none p-5">
             <h2 class="text-sm font-semibold">Prix moyen selon le nombre de pièces</h2>
             <StatsLineChart :labels="roomsLabels" :values="roomsPrices" color="#ef4444" :format-tick="formatCompact" />
           </section>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
               <h2 class="text-sm font-semibold">Villes les plus rentables</h2>
               <p class="text-xs text-gray-500 mt-1">Prix au m² le plus bas vs moyenne du filtre.</p>
@@ -332,10 +360,10 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
             <ul class="divide-y divide-gray-100 dark:divide-gray-800">
               <li v-for="(row, i) in stats.cities.most_rentable" :key="row.city" class="px-5 py-3">
                 <div class="flex items-center justify-between gap-3 mb-1.5">
-                  <NuxtLink :to="`/listings?search=${encodeURIComponent(row.city)}`" class="text-sm font-medium hover:text-primary-500 truncate">
+                  <NuxtLink :to="`/listings?search=${encodeURIComponent(row.city)}`" class="text-sm font-medium hover:text-emerald-800 dark:hover:text-primary-400 truncate">
                     {{ i + 1 }}. {{ row.city }}
                   </NuxtLink>
-                  <span class="text-sm font-semibold text-primary-600 dark:text-primary-400 shrink-0">indice {{ row.yield_index }}</span>
+                  <span class="text-sm font-semibold text-emerald-900 dark:text-primary-400 shrink-0">indice {{ row.yield_index }}</span>
                 </div>
                 <div class="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
                   <div class="h-full bg-primary-500 rounded-full" :style="{ width: barWidth(row.yield_index, stats.cities.most_rentable[0]?.yield_index || 1) }" />
@@ -348,14 +376,14 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
             </ul>
           </section>
 
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
               <h2 class="text-sm font-semibold">Villes les plus chères</h2>
             </div>
             <ul class="divide-y divide-gray-100 dark:divide-gray-800">
               <li v-for="(row, i) in stats.cities.most_expensive" :key="row.city" class="px-5 py-3">
                 <div class="flex items-center justify-between gap-3 mb-1.5">
-                  <NuxtLink :to="`/listings?search=${encodeURIComponent(row.city)}`" class="text-sm font-medium hover:text-primary-500 truncate">
+                  <NuxtLink :to="`/listings?search=${encodeURIComponent(row.city)}`" class="text-sm font-medium hover:text-emerald-800 dark:hover:text-primary-400 truncate">
                     {{ i + 1 }}. {{ row.city }}
                   </NuxtLink>
                   <span class="text-sm font-semibold shrink-0">{{ formatPrice(row.avg_price) }}</span>
@@ -370,7 +398,7 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none p-5">
             <h2 class="text-sm font-semibold mb-4">Tranches de prix</h2>
             <div class="space-y-3">
               <div v-for="bucket in stats.price_buckets" :key="bucket.key">
@@ -384,7 +412,7 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
               </div>
             </div>
           </section>
-          <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5">
+          <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none p-5">
             <h2 class="text-sm font-semibold mb-4">Types de biens</h2>
             <div class="space-y-4">
               <div v-for="row in stats.by_type" :key="row.property_type">
@@ -400,7 +428,7 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
           </section>
         </div>
 
-        <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+        <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none overflow-hidden">
           <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
             <h2 class="text-sm font-semibold">Régions</h2>
           </div>
@@ -429,7 +457,7 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
           </div>
         </section>
 
-        <section class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+        <section class="rounded-xl border border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-900 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none overflow-hidden">
           <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800">
             <h2 class="text-sm font-semibold">Départements</h2>
           </div>

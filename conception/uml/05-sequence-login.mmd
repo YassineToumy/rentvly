@@ -1,12 +1,12 @@
-%% Diagramme de séquence — Authentification Rentvly
-%% Optimisé impression / Overleaf (contraste élevé, gros texte, labels courts)
-%% Export conseillé : SVG ou PNG 300 dpi (mermaid.live → Actions → PNG/SVG)
+%% Diagramme de séquence — Authentification / Login (Rentvly)
+%% Clair, textes gras — impression / Overleaf
+%% npx @mermaid-js/mermaid-cli -i conception/uml/05-sequence-login.mmd -o conception/uml/05-sequence-login.png -b white -s 3 -w 2600 -C conception/uml/sequence-print.css
 
 %%{init: {
   'theme': 'base',
   'themeVariables': {
     'fontFamily': 'Arial, Helvetica, sans-serif',
-    'fontSize': '20px',
+    'fontSize': '22px',
     'background': '#ffffff',
     'mainBkg': '#ffffff',
     'textColor': '#000000',
@@ -26,25 +26,26 @@
     'labelBoxBorderColor': '#000000',
     'labelTextColor': '#000000',
     'loopTextColor': '#000000',
-    'noteBkgColor': '#ffffff',
+    'noteBkgColor': '#f5f5f5',
     'noteTextColor': '#000000',
     'noteBorderColor': '#000000',
     'activationBkgColor': '#d0d0d0',
     'activationBorderColor': '#000000',
     'sequenceNumberColor': '#ffffff'
   },
+  'themeCSS': 'text, tspan, .actor, .messageText, .noteText, .loopText, .labelText { font-weight: 700 !important; }',
   'sequence': {
-    'diagramMarginX': 40,
-    'diagramMarginY': 20,
-    'actorMargin': 80,
-    'width': 180,
-    'height': 55,
-    'boxMargin': 12,
-    'boxTextMargin': 8,
-    'noteMargin': 12,
-    'messageMargin': 45,
+    'diagramMarginX': 50,
+    'diagramMarginY': 24,
+    'actorMargin': 100,
+    'width': 200,
+    'height': 58,
+    'boxMargin': 14,
+    'boxTextMargin': 10,
+    'noteMargin': 14,
+    'messageMargin': 48,
     'mirrorActors': false,
-    'bottomMarginAdj': 10,
+    'bottomMarginAdj': 12,
     'useMaxWidth': false,
     'rightAngles': false,
     'showSequenceNumbers': false
@@ -61,52 +62,57 @@ sequenceDiagram
 
     C->>S: Ouvre /login
 
-    alt Connexion classique
-        C->>+S: Envoie e-mail + mot de passe
-        S->>+W: POST /login
-        W->>+D: Vérifie identifiants
-        D-->>-W: OK
-        W->>+D: Crée token
-        D-->>-W: token
-        W-->>-S: user + token
-        S-->>-C: Redirige (dashboard/admin)
+    rect rgb(245, 245, 245)
+    Note over C,D: 1 — Connexion classique
+    C->>+S: Envoie e-mail + mot de passe
+    S->>+W: POST /login
+    W->>+D: Vérifie les identifiants
+    D-->>-W: OK
+    W->>+D: Crée le token Sanctum
+    D-->>-W: Token
+    W-->>-S: User + token
+    S-->>-C: Redirige (dashboard / admin)
+    end
 
-    else Mot de passe oublié
-        C->>+S: Demande reset (e-mail)
-        S->>+W: POST /forgot-password
-        W->>+D: Cherche compte
-        D-->>-W: trouvé
-        W->>+D: Sauve token reset
-        D-->>-W: token
-        W->>+M: Envoie lien reset
-        M-->>C: E-mail
-        deactivate M
-        W-->>-S: confirmation
-        S-->>-C: « Vérifiez vos mails »
+    rect rgb(245, 245, 245)
+    Note over C,D: 2 — Mot de passe oublié
+    C->>+S: Demande de reset (e-mail)
+    S->>+W: POST /forgot-password
+    W->>+D: Cherche le compte
+    D-->>-W: Trouvé
+    W->>+D: Sauve le token reset
+    D-->>-W: Token
+    W->>+M: Envoie le lien de reset
+    M-->>C: E-mail reçu
+    deactivate M
+    W-->>-S: Confirmation
+    S-->>-C: « Vérifiez vos mails »
 
-        C->>+S: Nouveau mot de passe
-        S->>+W: POST /reset-password
-        W->>+D: Valide token
-        D-->>-W: valide
-        W->>+D: MAJ mot de passe
-        D-->>-W: OK
-        W-->>-S: succès
-        S-->>-C: Retour /login
+    C->>+S: Saisit le nouveau mot de passe
+    S->>+W: POST /reset-password
+    W->>+D: Valide le token
+    D-->>-W: Valide
+    W->>+D: Met à jour le mot de passe
+    D-->>-W: OK
+    W-->>-S: Succès
+    S-->>-C: Retour vers /login
+    end
 
-    else Connexion Google
-        C->>+S: Continuer avec Google
-        S->>+G: Consentement OAuth
-        G-->>C: Autorisation
-        deactivate G
-        C->>+G: Accepte
-        G-->>-S: code
-        S->>+W: POST /auth/google
-        W->>+G: Profil Gmail
-        G-->>-W: e-mail + id
-        W->>+D: Trouve ou crée compte
-        D-->>-W: user
-        W->>+D: Crée token
-        D-->>-W: token
-        W-->>-S: user + token
-        S-->>-C: Redirige (dashboard/admin)
+    rect rgb(245, 245, 245)
+    Note over C,D: 3 — Connexion Google
+    C->>+S: Continuer avec Google
+    S->>+G: Demande de consentement OAuth
+    G-->>C: Écran d'autorisation
+    deactivate G
+    C->>+G: Accepte
+    G-->>-S: Code OAuth
+    S->>+W: POST /auth/google
+    W->>+G: Récupère le profil
+    G-->>-W: E-mail + id
+    W->>+D: Trouve ou crée le compte
+    D-->>-W: User
+    W->>+D: Crée le token Sanctum
+    D-->>-W: Token
+    W-->>-S: User + token
+    S-->>-C: Redirige (dashboard / admin)
     end

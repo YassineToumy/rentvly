@@ -38,8 +38,16 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev \
     && php artisan package:discover --ansi
 
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 755 storage bootstrap/cache
+RUN mkdir -p storage/framework/views \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/app/public/avatars \
+    public/avatars \
+    storage/logs \
+    bootstrap/cache \
+    && php artisan storage:link \
+    && chown -R www-data:www-data storage bootstrap/cache public/storage public/avatars \
+    && chmod -R 755 storage bootstrap/cache public/avatars
 
 COPY Caddyfile /etc/caddy/Caddyfile
 

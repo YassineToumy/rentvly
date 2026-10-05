@@ -96,16 +96,16 @@ function formatDate(iso: string): string {
 
 function getYieldColor(y: number | null): string {
   if (y === null) return 'text-gray-600 dark:text-gray-500'
-  if (y >= 7) return 'text-green-400'
-  if (y >= 5) return 'text-emerald-400'
-  if (y >= 3) return 'text-yellow-400'
-  return 'text-red-400'
+  if (y >= 7) return 'text-emerald-800 dark:text-green-400'
+  if (y >= 5) return 'text-emerald-700 dark:text-emerald-400'
+  if (y >= 3) return 'text-amber-700 dark:text-yellow-400'
+  return 'text-red-700 dark:text-red-400'
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-950">
-    <div class="border-b border-gray-200 dark:border-gray-800/60 bg-white dark:bg-gray-950">
+  <div class="min-h-screen bg-[#e8eaed] dark:bg-gray-950">
+    <div class="border-b border-gray-300/80 dark:border-gray-800/60 bg-[#f4f5f7] dark:bg-gray-950 shadow-[0_2px_10px_rgba(15,23,42,0.06)] dark:shadow-none">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <UButton
           variant="ghost"
@@ -150,7 +150,7 @@ function getYieldColor(y: number | null): string {
               </h1>
               <span
                 v-if="estimation.is_purchased"
-                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-400"
               >
                 <UIcon name="i-lucide-check-circle-2" class="size-3.5" />
                 Bien acheté
@@ -161,7 +161,7 @@ function getYieldColor(y: number | null): string {
               <span v-if="estimation.surface_area"> · {{ estimation.surface_area }} m²</span>
               · {{ formatDate(estimation.created_at) }}
             </p>
-            <p v-if="estimation.purchased_at" class="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+            <p v-if="estimation.purchased_at" class="text-xs text-emerald-800 dark:text-emerald-400 mt-1">
               Acheté le {{ formatDate(estimation.purchased_at) }}
             </p>
           </div>
@@ -207,11 +207,11 @@ function getYieldColor(y: number | null): string {
         />
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <UCard class="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+          <UCard class="bg-[#f4f5f7] dark:bg-gray-900 border-gray-300/80 dark:border-gray-800 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none">
             <template #header>
               <h2 class="font-semibold text-gray-900 dark:text-white">Loyer estimé</h2>
             </template>
-            <p class="text-4xl font-bold text-primary-400">
+            <p class="text-4xl font-bold text-emerald-900 dark:text-primary-400">
               {{ formatCurrency(estimation.prediction.predicted_rent) }}
               <span class="text-sm font-normal text-gray-600 dark:text-gray-500">/mois</span>
             </p>
@@ -224,7 +224,7 @@ function getYieldColor(y: number | null): string {
             </p>
           </UCard>
 
-          <UCard v-if="estimation.rentability" class="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+          <UCard v-if="estimation.rentability" class="bg-[#f4f5f7] dark:bg-gray-900 border-gray-300/80 dark:border-gray-800 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none">
             <template #header>
               <h2 class="font-semibold text-gray-900 dark:text-white">
                 Rentabilité
@@ -250,7 +250,7 @@ function getYieldColor(y: number | null): string {
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-600 dark:text-gray-500">Cashflow mensuel</span>
-                <span class="font-medium" :class="estimation.rentability.monthly_cashflow >= 0 ? 'text-green-400' : 'text-red-400'">
+                <span class="font-medium" :class="estimation.rentability.monthly_cashflow >= 0 ? 'text-emerald-800 dark:text-green-400' : 'text-red-700 dark:text-red-400'">
                   {{ formatCurrency(estimation.rentability.monthly_cashflow) }}
                 </span>
               </div>
@@ -260,7 +260,7 @@ function getYieldColor(y: number | null): string {
 
         <UCard
           v-if="estimation.variants && estimation.variants.length > 0"
-          class="mt-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
+          class="mt-6 bg-[#f4f5f7] dark:bg-gray-900 border-gray-300/80 dark:border-gray-800 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none"
         >
           <template #header>
             <div>
@@ -277,7 +277,7 @@ function getYieldColor(y: number | null): string {
 
         <UCard
           v-if="estimation.is_purchased && estimation.investment"
-          class="mt-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
+          class="mt-6 bg-[#f4f5f7] dark:bg-gray-900 border-gray-300/80 dark:border-gray-800 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none"
         >
           <template #header>
             <div>
@@ -299,7 +299,7 @@ function getYieldColor(y: number | null): string {
             </div>
             <div class="rounded-lg bg-gray-50 dark:bg-gray-800/50 p-4">
               <p class="text-xs text-gray-600 dark:text-gray-500">Rendement net / an</p>
-              <p class="text-lg font-bold text-primary-500 mt-1">
+              <p class="text-lg font-bold text-emerald-900 dark:text-primary-400 mt-1">
                 {{ estimation.investment.net_yield_pct }}%
               </p>
             </div>
@@ -307,7 +307,7 @@ function getYieldColor(y: number | null): string {
               <p class="text-xs text-gray-600 dark:text-gray-500">Cashflow mensuel</p>
               <p
                 class="text-lg font-bold mt-1"
-                :class="estimation.investment.monthly_cashflow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'"
+                :class="estimation.investment.monthly_cashflow >= 0 ? 'text-emerald-800 dark:text-green-400' : 'text-red-700 dark:text-red-500'"
               >
                 {{ formatCurrency(estimation.investment.monthly_cashflow) }}
               </p>
@@ -317,7 +317,7 @@ function getYieldColor(y: number | null): string {
           <DashboardInvestmentHorizonGrid :horizons="estimation.investment.horizons" />
         </UCard>
 
-        <UCard class="mt-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+        <UCard class="mt-6 bg-[#f4f5f7] dark:bg-gray-900 border-gray-300/80 dark:border-gray-800 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:shadow-none">
           <template #header>
             <h2 class="font-semibold text-gray-900 dark:text-white">Caractéristiques du bien</h2>
           </template>

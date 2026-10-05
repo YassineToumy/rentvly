@@ -16,10 +16,10 @@ function formatCurrency(value: number): string {
     <div
       v-for="h in horizons"
       :key="h.years"
-      class="rounded-lg border border-gray-200 dark:border-gray-800/60 bg-gray-50 dark:bg-gray-800/40 p-4"
+      class="rounded-lg border border-gray-300/80 dark:border-gray-800/60 bg-[#f4f5f7] dark:bg-gray-800/40 shadow-[0_3px_12px_rgba(15,23,42,0.09)] dark:shadow-none"
       :class="compact ? 'p-3' : 'p-4'"
     >
-      <p class="text-xs font-medium text-primary-500 uppercase tracking-wide mb-2">
+      <p class="text-xs font-medium text-emerald-800 dark:text-primary-400 uppercase tracking-wide mb-2">
         {{ h.years }} an{{ h.years > 1 ? 's' : '' }}
       </p>
       <p class="text-lg font-bold text-gray-900 dark:text-white">

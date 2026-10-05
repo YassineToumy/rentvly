@@ -1,9 +1,20 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { usePrediction } from '../composables/usePrediction'
+import type { PropertyForm } from '../composables/usePrediction'
+
+const DRAFT_KEY = 'rentvly_predict_draft'
+
+type PredictDraft = {
+  form: PropertyForm
+  purchasePrice: number | null
+  currentStep: number
+  pendingPredict: boolean
+}
 
 const { form, loading, error, predictionResult, rentabilityResult, predictRent, calculateRentability, resetForm } = usePrediction()
 const { isAuthenticated } = useAuth()
+const { requireAuth } = useAuthGate()
 const { saveEstimation, saving: savingEstimation } = useEstimations()
 
 const purchasePrice = ref<number | null>(null)
@@ -56,24 +67,59 @@ function prevStep() {
   if (currentStep.value > 0) currentStep.value--
 }
 
-async function handlePredict() {
+function saveDraft(pendingPredict = true) {
+  if (!import.meta.client) return
+  const draft: PredictDraft = {
+    form: { ...form },
+    purchasePrice: purchasePrice.value,
+    currentStep: currentStep.value,
+    pendingPredict,
+  }
+  sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+}
+
+function clearDraft() {
+  if (!import.meta.client) return
+  sessionStorage.removeItem(DRAFT_KEY)
+}
+
+function restoreDraft(): PredictDraft | null {
+  if (!import.meta.client) return null
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as PredictDraft
+  } catch {
+    return null
+  }
+}
+
+async function runPredict() {
   await predictRent()
   if (predictionResult.value) {
     showResults.value = true
   }
 }
 
+async function handlePredict() {
+  if (!isAuthenticated.value) {
+    saveDraft(true)
+    requireAuth('predict')
+    return
+  }
+  clearDraft()
+  await runPredict()
+}
+
 async function handleRentability() {
+  if (!requireAuth('predict')) return
   if (!purchasePrice.value || purchasePrice.value <= 0) return
   await calculateRentability(purchasePrice.value)
 }
 
 async function handleSave() {
   if (!predictionResult.value) return
-  if (!isAuthenticated.value) {
-    await navigateTo('/login')
-    return
-  }
+  if (!requireAuth('predict')) return
 
   saveSuccess.value = false
   const saved = await saveEstimation({
@@ -85,32 +131,60 @@ async function handleSave() {
 
   if (saved) {
     saveSuccess.value = true
+    clearDraft()
     await navigateTo(`/dashboard/estimations/${saved.data.id}`)
   }
 }
+
+async function resumePendingPredict() {
+  if (!isAuthenticated.value) return
+  const draft = restoreDraft()
+  if (!draft?.pendingPredict) return
+
+  Object.assign(form, draft.form)
+  purchasePrice.value = draft.purchasePrice
+  currentStep.value = draft.currentStep ?? 0
+  clearDraft()
+  await runPredict()
+}
+
+onMounted(() => {
+  resumePendingPredict()
+})
+
+watch(isAuthenticated, (ok) => {
+  if (ok) resumePendingPredict()
+})
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(value)
 }
 
 function getYieldColor(yieldPct: number): string {
-  if (yieldPct >= 7) return 'text-green-500'
-  if (yieldPct >= 5) return 'text-emerald-500'
-  if (yieldPct >= 3) return 'text-yellow-500'
-  return 'text-red-500'
+  if (yieldPct >= 7) return 'text-emerald-800 dark:text-green-400'
+  if (yieldPct >= 5) return 'text-emerald-700 dark:text-emerald-400'
+  if (yieldPct >= 3) return 'text-amber-700 dark:text-yellow-500'
+  return 'text-red-700 dark:text-red-500'
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="min-h-screen bg-[#e8eaed] dark:bg-gray-950">
     <!-- Header -->
-    <div class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+    <div class="bg-[#f4f5f7] dark:bg-gray-900 border-b border-gray-300/80 dark:border-gray-800 shadow-[0_2px_10px_rgba(15,23,42,0.06)] dark:shadow-none">
       <div class="max-w-5xl mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 class="text-3xl font-bold text-gray-950 dark:text-white">
           Estimateur de Loyer
         </h1>
         <p class="mt-2 text-gray-600 dark:text-gray-500 dark:text-gray-400">
           Estimez le loyer mensuel de votre bien immobilier grâce à notre modèle de prédiction.
+        </p>
+        <p
+          v-if="!isAuthenticated"
+          class="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-100 dark:bg-primary-950/40 px-3 py-1.5 text-xs font-medium text-emerald-900 dark:text-primary-300 ring-1 ring-emerald-700/20"
+        >
+          <UIcon name="i-lucide-info" class="size-3.5" />
+          Remplissez le formulaire librement — la connexion sera demandée au moment d’estimer.
         </p>
       </div>
     </div>
@@ -122,7 +196,7 @@ function getYieldColor(yieldPct: number): string {
         <!-- LEFT: FORM -->
         <!-- ══════════════════════════════════════════ -->
         <div class="lg:col-span-2">
-          <UCard>
+          <UCard class="shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none ring-1 ring-gray-300/80 dark:ring-gray-800">
             <!-- Steps indicator -->
             <div class="flex items-center justify-between mb-8">
               <button
@@ -130,7 +204,7 @@ function getYieldColor(yieldPct: number): string {
                 :key="i"
                 class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
                 :class="i === currentStep
-                  ? 'bg-primary-50 dark:bg-primary-950 text-primary-600 dark:text-primary-400'
+                  ? 'bg-emerald-100 dark:bg-primary-950 text-emerald-900 dark:text-primary-400'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-600'"
                 @click="currentStep = i"
               >
@@ -330,10 +404,13 @@ function getYieldColor(yieldPct: number): string {
           />
 
           <!-- Prediction result -->
-          <UCard v-if="predictionResult">
+          <UCard
+            v-if="predictionResult"
+            class="shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none ring-1 ring-gray-300/80 dark:ring-gray-800"
+          >
             <div class="text-center">
               <p class="text-sm text-gray-600 dark:text-gray-500 dark:text-gray-400 mb-1">Loyer mensuel estimé</p>
-              <p class="text-4xl font-bold text-primary-600 dark:text-primary-400">
+              <p class="text-4xl font-bold text-emerald-900 dark:text-primary-400">
                 {{ formatCurrency(predictionResult.predicted_rent) }}
               </p>
               <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">
@@ -363,7 +440,10 @@ function getYieldColor(yieldPct: number): string {
           </UCard>
 
           <!-- Waiting state -->
-          <UCard v-if="!predictionResult && !error">
+          <UCard
+            v-if="!predictionResult && !error"
+            class="shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none ring-1 ring-gray-300/80 dark:ring-gray-800"
+          >
             <div class="text-center py-6">
               <UIcon name="i-lucide-home" class="size-12 text-gray-700 dark:text-gray-300 dark:text-gray-600 mx-auto mb-3" />
               <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -373,10 +453,13 @@ function getYieldColor(yieldPct: number): string {
           </UCard>
 
           <!-- Rentability calculator -->
-          <UCard v-if="predictionResult">
+          <UCard
+            v-if="predictionResult"
+            class="shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none ring-1 ring-gray-300/80 dark:ring-gray-800"
+          >
             <template #header>
               <div class="flex items-center gap-2">
-                <UIcon name="i-lucide-trending-up" class="size-5 text-primary-500" />
+                <UIcon name="i-lucide-trending-up" class="size-5 text-emerald-800 dark:text-primary-400" />
                 <h3 class="font-semibold">Rentabilité locative</h3>
               </div>
             </template>
@@ -431,7 +514,7 @@ function getYieldColor(yieldPct: number): string {
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600 dark:text-gray-500">Cashflow mensuel net</span>
-                  <span class="font-medium" :class="rentabilityResult.monthly_cashflow >= 0 ? 'text-green-500' : 'text-red-500'">
+                  <span class="font-medium" :class="rentabilityResult.monthly_cashflow >= 0 ? 'text-emerald-800 dark:text-green-400' : 'text-red-700 dark:text-red-500'">
                     {{ formatCurrency(rentabilityResult.monthly_cashflow) }}
                   </span>
                 </div>

@@ -6,6 +6,7 @@ useHead({
 })
 
 const { login, loading, error, isAuthenticated, user, fetchUser } = useAuth()
+const route = useRoute()
 
 const email = ref('')
 const password = ref('')
@@ -15,6 +16,11 @@ const rememberMe = ref(false)
 onMounted(async () => {
   if (isAuthenticated.value && !user.value) await fetchUser()
   if (isAuthenticated.value) {
+    const redirect = route.query.redirect
+    if (typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')) {
+      await navigateTo(redirect)
+      return
+    }
     navigateTo(user.value?.role === 'admin' ? '/admin' : '/dashboard')
   }
 })

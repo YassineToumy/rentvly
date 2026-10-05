@@ -72,11 +72,11 @@ function formatDate(date: string): string {
 }
 
 function getYieldColor(y: number | null): string {
-  if (y === null) return 'text-gray-600 dark:text-gray-500'
-  if (y >= 7) return 'text-green-400'
-  if (y >= 5) return 'text-emerald-400'
-  if (y >= 3) return 'text-yellow-400'
-  return 'text-red-400'
+  if (y === null) return 'text-gray-700 dark:text-gray-400'
+  if (y >= 7) return 'text-emerald-800 dark:text-green-400'
+  if (y >= 5) return 'text-emerald-700 dark:text-emerald-400'
+  if (y >= 3) return 'text-amber-700 dark:text-yellow-400'
+  return 'text-red-700 dark:text-red-400'
 }
 
 function getYieldBg(y: number | null): string {
@@ -89,15 +89,15 @@ function getYieldBg(y: number | null): string {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-950">
-    <div class="border-b border-gray-200 dark:border-gray-800/60 bg-white dark:bg-gray-950">
+  <div class="min-h-screen bg-[#e8eaed] dark:bg-gray-950">
+    <div class="border-b border-gray-300/80 dark:border-gray-800/60 bg-[#f4f5f7] dark:bg-gray-950 shadow-[0_2px_10px_rgba(15,23,42,0.06)] dark:shadow-none">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
               Bonjour, {{ firstName }}
             </h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-500">
+            <p class="mt-1 text-sm text-gray-700 dark:text-gray-400">
               Votre tableau de bord investisseur Rentvly.
             </p>
           </div>
@@ -144,7 +144,7 @@ function getYieldBg(y: number | null): string {
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               Mes biens achetés
             </h2>
-            <span class="text-sm text-gray-600 dark:text-gray-500">{{ purchased.length }} bien(s)</span>
+            <span class="text-sm text-gray-700 dark:text-gray-400">{{ purchased.length }} bien(s)</span>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <DashboardPurchasedPropertyCard
@@ -177,7 +177,7 @@ function getYieldBg(y: number | null): string {
               >
                 Achetées
               </UButton>
-              <span class="text-sm text-gray-600 dark:text-gray-500 ml-2">{{ filteredEstimations.length }} / {{ stats.total }}</span>
+              <span class="text-sm text-gray-700 dark:text-gray-400 ml-2">{{ filteredEstimations.length }} / {{ stats.total }}</span>
             </div>
           </div>
 
@@ -194,17 +194,17 @@ function getYieldBg(y: number | null): string {
             </UButton>
           </div>
 
-          <div v-else class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800/60 overflow-hidden">
+          <div v-else class="bg-[#f4f5f7] dark:bg-gray-900 rounded-xl border border-gray-300/80 dark:border-gray-800/60 overflow-hidden shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none">
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead>
                   <tr class="border-b border-gray-200 dark:border-gray-800/60">
-                    <th class="text-left text-xs font-medium text-gray-600 dark:text-gray-500 uppercase tracking-wider px-5 py-3">Bien</th>
-                    <th class="text-left text-xs font-medium text-gray-600 dark:text-gray-500 uppercase tracking-wider px-5 py-3 hidden sm:table-cell">Surface</th>
-                    <th class="text-right text-xs font-medium text-gray-600 dark:text-gray-500 uppercase tracking-wider px-5 py-3">Loyer</th>
-                    <th class="text-right text-xs font-medium text-gray-600 dark:text-gray-500 uppercase tracking-wider px-5 py-3 hidden md:table-cell">Rendement</th>
-                    <th class="text-right text-xs font-medium text-gray-600 dark:text-gray-500 uppercase tracking-wider px-5 py-3 hidden lg:table-cell">Statut</th>
-                    <th class="text-right text-xs font-medium text-gray-600 dark:text-gray-500 uppercase tracking-wider px-5 py-3">Actions</th>
+                    <th class="text-left text-xs font-medium text-gray-700 dark:text-gray-400 uppercase tracking-wider px-5 py-3">Bien</th>
+                    <th class="text-left text-xs font-medium text-gray-700 dark:text-gray-400 uppercase tracking-wider px-5 py-3 hidden sm:table-cell">Surface</th>
+                    <th class="text-right text-xs font-medium text-gray-700 dark:text-gray-400 uppercase tracking-wider px-5 py-3">Loyer</th>
+                    <th class="text-right text-xs font-medium text-gray-700 dark:text-gray-400 uppercase tracking-wider px-5 py-3 hidden md:table-cell">Rendement</th>
+                    <th class="text-right text-xs font-medium text-gray-700 dark:text-gray-400 uppercase tracking-wider px-5 py-3 hidden lg:table-cell">Statut</th>
+                    <th class="text-right text-xs font-medium text-gray-700 dark:text-gray-400 uppercase tracking-wider px-5 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-800/40">
@@ -222,10 +222,10 @@ function getYieldBg(y: number | null): string {
                           />
                         </div>
                         <div>
-                          <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-500">{{ est.city }}</p>
-                          <p class="text-xs text-gray-600 dark:text-gray-500">
+                          <p class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-emerald-800 dark:group-hover:text-primary-400">{{ est.city }}</p>
+                          <p class="text-xs text-gray-700 dark:text-gray-400">
                             {{ est.property_type_label }} · {{ est.rooms }}p
-                            <span v-if="est.variants_count" class="text-primary-500">
+                            <span v-if="est.variants_count" class="text-emerald-800 dark:text-primary-400">
                               · {{ est.variants_count }} variante{{ est.variants_count > 1 ? 's' : '' }}
                             </span>
                           </p>
@@ -237,7 +237,7 @@ function getYieldBg(y: number | null): string {
                     </td>
                     <td class="px-5 py-4 text-right">
                       <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ formatCurrency(est.predicted_rent) }}</span>
-                      <span class="text-xs text-gray-600 dark:text-gray-500">/mois</span>
+                      <span class="text-xs text-gray-700 dark:text-gray-400">/mois</span>
                     </td>
                     <td class="px-5 py-4 text-right hidden md:table-cell">
                       <span
@@ -252,7 +252,7 @@ function getYieldBg(y: number | null): string {
                     <td class="px-5 py-4 text-right hidden lg:table-cell">
                       <span
                         v-if="est.is_purchased"
-                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-900 dark:bg-emerald-500/10 dark:text-emerald-400"
                       >
                         <UIcon name="i-lucide-check" class="size-3" />
                         Acheté

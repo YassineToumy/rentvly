@@ -25,15 +25,15 @@ function handleClick() {
     type="button"
     class="block w-full text-left p-5 rounded-xl border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
     :class="active
-      ? 'border-primary-500 bg-primary-500/5 shadow-sm'
-      : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800/60 hover:border-primary-500/40 hover:shadow-md cursor-pointer'"
+      ? 'border-emerald-700 bg-emerald-50 shadow-[0_4px_14px_rgba(15,23,42,0.1)] dark:border-primary-500 dark:bg-primary-500/5'
+      : 'app-card hover:border-emerald-600/50 cursor-pointer'"
     @click="handleClick"
   >
-    <div class="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center mb-3">
-      <UIcon :name="icon" class="size-5 text-primary-400" />
+    <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-primary-500/10 flex items-center justify-center mb-3">
+      <UIcon :name="icon" class="size-5 text-emerald-800 dark:text-primary-400" />
     </div>
-    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ value }}</p>
-    <p class="text-xs text-gray-600 dark:text-gray-500 mt-1">{{ label }}</p>
-    <p v-if="trend" class="text-xs text-primary-400 mt-1">{{ trend }}</p>
+    <p class="text-2xl font-bold text-gray-950 dark:text-white">{{ value }}</p>
+    <p class="text-xs text-gray-700 dark:text-gray-400 mt-1">{{ label }}</p>
+    <p v-if="trend" class="text-xs text-emerald-800 dark:text-primary-400 mt-1">{{ trend }}</p>
   </component>
 </template>

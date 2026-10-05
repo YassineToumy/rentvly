@@ -20,7 +20,7 @@ const detailTo = computed(() => `/dashboard/estimations/${props.item.id}`)
           <h3 class="font-semibold app-heading truncate">
             {{ item.city }}
           </h3>
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-400">
             <UIcon name="i-lucide-check-circle-2" class="size-3" />
             Acheté
           </span>
@@ -42,13 +42,13 @@ const detailTo = computed(() => `/dashboard/estimations/${props.item.id}`)
       </div>
       <div>
         <p class="text-xs app-muted">Rendement net annuel</p>
-        <p class="font-semibold text-primary-500">{{ item.investment.net_yield_pct }}%</p>
+        <p class="font-semibold text-emerald-800 dark:text-primary-400">{{ item.investment.net_yield_pct }}%</p>
       </div>
       <div>
         <p class="text-xs app-muted">Cashflow mensuel</p>
         <p
           class="font-semibold"
-          :class="item.investment.monthly_cashflow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'"
+          :class="item.investment.monthly_cashflow >= 0 ? 'text-emerald-800 dark:text-green-400' : 'text-red-600 dark:text-red-500'"
         >
           {{ formatCurrency(item.investment.monthly_cashflow) }}
         </p>
