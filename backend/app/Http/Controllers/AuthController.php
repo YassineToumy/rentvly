@@ -404,6 +404,41 @@ class AuthController extends Controller
     }
 
     /**
+     * PATCH /api/v1/me/email
+     */
+    public function updateEmail(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->ignore($request->user()->id),
+            ],
+            'current_password' => 'required|string',
+        ], [
+            'email.required' => "L'email est obligatoire.",
+            'email.email'    => "L'email n'est pas valide.",
+            'email.unique'   => 'Cet email est déjà utilisé.',
+            'current_password.required' => 'Le mot de passe actuel est obligatoire.',
+        ]);
+
+        if (! Hash::check($validated['current_password'], $request->user()->password)) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Mot de passe actuel incorrect.',
+            ], 422);
+        }
+
+        $request->user()->update(['email' => $validated['email']]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $this->userResponse($request->user()->fresh(), $request),
+            'message' => 'Email mis à jour.',
+        ]);
+    }
+
+    /**
      * PATCH /api/v1/me/password
      */
     public function updatePassword(Request $request): JsonResponse

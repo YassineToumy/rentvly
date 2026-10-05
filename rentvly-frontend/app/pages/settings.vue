@@ -421,6 +421,7 @@ function normalizeAvatar(data: any) {
           </button>
         </div>
       </section>
+
     </div>
   </div>
 </template>

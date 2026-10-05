@@ -89,4 +89,73 @@ class AuthTest extends TestCase
 
         $this->assertSame(0, $user->tokens()->count());
     }
+
+    public function test_guest_cannot_update_email_or_password(): void
+    {
+        $this->patchJson('/api/v1/me/email', [
+            'email' => 'new@example.com',
+            'current_password' => 'password',
+        ])->assertUnauthorized();
+
+        $this->patchJson('/api/v1/me/password', [
+            'current_password' => 'password',
+            'password' => 'newpassword',
+            'password_confirmation' => 'newpassword',
+        ])->assertUnauthorized();
+    }
+
+    public function test_user_can_update_email_with_current_password(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'old@example.com',
+            'password' => 'password123',
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->patchJson('/api/v1/me/email', [
+            'email' => 'new@example.com',
+            'current_password' => 'password123',
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.email', 'new@example.com');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'email' => 'new@example.com',
+        ]);
+    }
+
+    public function test_email_update_rejects_wrong_password(): void
+    {
+        $user = User::factory()->create(['password' => 'password123']);
+        Sanctum::actingAs($user);
+
+        $this->patchJson('/api/v1/me/email', [
+            'email' => 'new@example.com',
+            'current_password' => 'wrong-password',
+        ])->assertStatus(422);
+    }
+
+    public function test_user_can_update_password(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'pwd@example.com',
+            'password' => 'password123',
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->patchJson('/api/v1/me/password', [
+            'current_password' => 'password123',
+            'password' => 'newpassword',
+            'password_confirmation' => 'newpassword',
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->postJson('/api/v1/login', [
+            'email' => 'pwd@example.com',
+            'password' => 'newpassword',
+        ])->assertOk();
+    }
 }

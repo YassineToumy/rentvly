@@ -170,6 +170,37 @@ export function useAuth() {
     navigateTo('/')
   }
 
+  function apiErrorMessage(e: any, fallback: string): string {
+    return e?.data?.error
+      || e?.data?.message
+      || e?.data?.errors?.email?.[0]
+      || e?.data?.errors?.password?.[0]
+      || e?.data?.errors?.current_password?.[0]
+      || fallback
+  }
+
+  async function updateEmail(email: string, currentPassword: string) {
+    const res = await $fetch<{ success: boolean; data?: User; message?: string }>(`${apiBase}/me/email`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: { email, current_password: currentPassword },
+    })
+    if (res.success && res.data) user.value = res.data
+    return res
+  }
+
+  async function updatePassword(currentPassword: string, password: string, passwordConfirmation: string) {
+    return await $fetch<{ success: boolean; message?: string }>(`${apiBase}/me/password`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: {
+        current_password: currentPassword,
+        password,
+        password_confirmation: passwordConfirmation,
+      },
+    })
+  }
+
   const isAuthenticated = computed(() => !!token.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
 
@@ -186,6 +217,9 @@ export function useAuth() {
     login,
     logout,
     fetchUser,
+    updateEmail,
+    updatePassword,
+    apiErrorMessage,
     authHeaders,
   }
 }
