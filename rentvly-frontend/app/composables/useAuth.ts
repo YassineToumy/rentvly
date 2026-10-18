@@ -5,6 +5,7 @@ interface User {
   role: 'admin' | 'investor'
   avatar?: string | null
   avatar_url?: string | null
+  two_factor_enabled?: boolean
   created_at: string
 }
 
@@ -16,7 +17,6 @@ export function useAuth() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  // Init from cookie
   if (!token.value) {
     const saved = useCookie('auth_token')
     if (saved.value) token.value = saved.value
@@ -148,9 +148,9 @@ export function useAuth() {
         await postAuthRedirect(res.data.user?.role)
       }
     } catch (e: any) {
-      // Compte non vérifié : rediriger vers la vérification 2FA
       if (e?.data?.requires_verification) {
-        await navigateTo(`/verify-email?email=${encodeURIComponent(e.data.email ?? email)}`)
+        const reason = e.data.two_factor ? '&reason=2fa' : ''
+        await navigateTo(`/verify-email?email=${encodeURIComponent(e.data.email ?? email)}${reason}`)
         return
       }
       error.value = e?.data?.error || e?.data?.message || 'Email ou mot de passe incorrect.'
@@ -201,6 +201,16 @@ export function useAuth() {
     })
   }
 
+  async function updateTwoFactor(enabled: boolean) {
+    const res = await $fetch<{ success: boolean; data?: User; message?: string }>(`${apiBase}/me/two-factor`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: { enabled },
+    })
+    if (res.success && res.data) user.value = normalizeUser(res.data)
+    return res
+  }
+
   const isAuthenticated = computed(() => !!token.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
 
@@ -219,6 +229,7 @@ export function useAuth() {
     fetchUser,
     updateEmail,
     updatePassword,
+    updateTwoFactor,
     apiErrorMessage,
     authHeaders,
   }

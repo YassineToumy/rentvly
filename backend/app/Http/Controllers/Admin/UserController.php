@@ -78,7 +78,6 @@ class UserController extends Controller
             'role'     => ['sometimes', 'required', Rule::in(['admin', 'investor'])],
         ]);
 
-        // Prevent demoting the last admin
         if (isset($validated['role']) && $validated['role'] !== 'admin' && $user->role === 'admin') {
             $adminCount = User::where('role', 'admin')->count();
             if ($adminCount <= 1) {

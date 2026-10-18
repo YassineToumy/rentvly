@@ -131,40 +131,32 @@ class ImportVentesFromMongo extends Command
             'external_id'         => $externalId,
             'title'               => mb_substr($this->stringVal($doc['title'] ?? '') ?? '', 0, 255),
             'description'         => $this->stringVal($doc['description'] ?? null),
-
             'property_type'       => $this->stringVal($doc['property_type'] ?? 'flat') ?: 'flat',
             'is_new_property'     => (bool) ($doc['is_new_property'] ?? false),
-
             'price'               => (int) ($doc['price'] ?? 0),
             'price_per_sqm'       => $this->floatVal($doc['price_per_sqm'] ?? null),
             'price_has_decreased' => (bool) ($doc['price_has_decreased'] ?? false),
             'reduced_vat'         => (bool) ($doc['reduced_vat'] ?? false),
-
             'surface_area'        => $this->floatVal($doc['surface_area'] ?? null),
             'rooms_quantity'      => isset($doc['rooms_quantity']) ? (int) $doc['rooms_quantity'] : null,
             'surface_per_room'    => $this->floatVal($doc['surface_per_room'] ?? null),
-
             'interior_features'   => json_encode([
                 'is_disabled_friendly' => (bool) ($doc['is_disabled_friendly'] ?? false),
                 'has_elevator'         => (bool) ($doc['has_elevator'] ?? false),
             ]),
-
             'exterior_features'   => json_encode([
                 'has_garden'  => (bool) ($doc['has_garden'] ?? false),
                 'has_terrace' => (bool) ($doc['has_terrace'] ?? false),
                 'has_balcony' => (bool) ($doc['has_balcony'] ?? false),
                 'has_pool'    => (bool) ($doc['has_pool'] ?? false),
             ]),
-
             'other_features'      => json_encode([
                 'has_parking'          => (bool) ($doc['has_parking'] ?? false),
                 'has_cellar'           => (bool) ($doc['has_cellar'] ?? false),
                 'has_air_conditioning' => (bool) ($doc['has_air_conditioning'] ?? false),
                 'has_fireplace'        => (bool) ($doc['has_fireplace'] ?? false),
             ]),
-
             'equipment_score'     => (int) ($doc['equipment_score'] ?? 0),
-
             'city'                => mb_substr($this->stringVal($doc['city'] ?? '') ?? '', 0, 255),
             'postal_code'         => $postal ?: '00000',
             'department_code'     => $department,
@@ -174,20 +166,16 @@ class ImportVentesFromMongo extends Command
             'code_commune'        => $this->communeCode($doc['code_insee'] ?? null),
             'latitude'            => $this->floatVal($doc['latitude'] ?? null),
             'longitude'           => $this->floatVal($doc['longitude'] ?? null),
-
             'owner_type'          => mb_substr((string) ($this->stringVal($doc['owner_type'] ?? null) ?? ''), 0, 255) ?: null,
             'owner_name'          => mb_substr((string) ($this->stringVal($doc['owner_name'] ?? null) ?? ''), 0, 255) ?: null,
             'is_pro'              => (bool) ($doc['is_pro'] ?? false),
-
             'photos'              => json_encode($photos),
             'photos_count'        => (int) ($doc['photos_count'] ?? count($photos)),
-
             'publication_date'    => $this->toTimestamp($doc['publication_date'] ?? null),
             'modification_date'   => $this->toTimestamp($doc['modification_date'] ?? null),
             'delivery_date'       => $this->toDate($doc['delivery_date'] ?? null),
             'scraped_at'          => $this->toTimestamp($doc['scraped_at'] ?? null),
             'cleaned_at'          => $this->toTimestamp($doc['cleaned_at'] ?? null),
-
             'created_at'          => $now,
             'updated_at'          => $now,
         ];

@@ -1,5 +1,4 @@
 <?php
-// ── app/Models/Region.php ──
 
 namespace App\Models;
 

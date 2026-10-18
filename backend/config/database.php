@@ -1,15 +1,10 @@
 <?php
 
 return [
-
     'default' => env('DB_CONNECTION', 'pgsql'),
-
     'connections' => [
-
-        // ── PostgreSQL (users, regions, default) ──
         'pgsql' => [
             'driver'         => 'pgsql',
-            // 127.0.0.1 avoids Windows resolving localhost → ::1 (IPv6)
             'host'           => env('DB_HOST', '127.0.0.1'),
             'port'           => env('DB_PORT', '5432'),
             'database'       => env('DB_DATABASE', 'rentvly_db'),
@@ -21,12 +16,9 @@ return [
             'search_path'    => 'public',
             'sslmode'        => 'prefer',
         ],
-
     ],
-
     'migrations' => [
         'table' => 'migrations',
         'update_date_on_change' => true,
     ],
-
 ];

@@ -44,10 +44,8 @@ class AuthController extends Controller
         $user = User::create([
             'name'     => $validated['first_name'].' '.$validated['last_name'],
             'email'    => $validated['email'],
-            // 'password' is cast as 'hashed' on the User model — pass plain text
             'password' => $validated['password'],
             'role'     => 'investor',
-            // Compte non vérifié : un code 2FA doit être validé avant d'obtenir un token
             'email_verified_at' => null,
         ]);
 
@@ -134,10 +132,10 @@ class AuthController extends Controller
 
         $generic = [
             'success' => true,
-            'message' => 'Si un compte non vérifié existe avec cet e-mail, un nouveau code vient d’être envoyé.',
+            'message' => 'Si un compte éligible existe avec cet e-mail, un nouveau code vient d’être envoyé.',
         ];
 
-        if (! $user || $user->email_verified_at !== null) {
+        if (! $user || ($user->email_verified_at !== null && ! $user->two_factor_enabled)) {
             return response()->json($generic);
         }
 
@@ -182,7 +180,6 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Compte non vérifié : renvoyer un code 2FA au lieu d'un token
         if ($user->email_verified_at === null) {
             try {
                 $this->sendVerificationCode($user);
@@ -198,7 +195,22 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Delete old tokens (optional: single device login)
+        if ($user->two_factor_enabled) {
+            try {
+                $this->sendVerificationCode($user);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+
+            return response()->json([
+                'success'               => false,
+                'requires_verification' => true,
+                'two_factor'            => true,
+                'email'                 => $user->email,
+                'message'               => 'Un code de connexion vient d’être envoyé à votre e-mail.',
+            ], 403);
+        }
+
         $user->tokens()->delete();
 
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -228,7 +240,6 @@ class AuthController extends Controller
         $email = strtolower(trim($validated['email']));
         $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
-        // Toujours le même message (pas d'énumération d'emails)
         $generic = [
             'success' => true,
             'message' => 'Si un compte existe avec cet e-mail, un code de vérification vient d’être envoyé.',
@@ -507,6 +518,32 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * PATCH /api/v1/me/two-factor
+     * Active ou désactive la double authentification à la connexion.
+     */
+    public function updateTwoFactor(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'enabled' => 'required|boolean',
+        ], [
+            'enabled.required' => 'Le paramètre est obligatoire.',
+            'enabled.boolean'  => 'Valeur invalide.',
+        ]);
+
+        $user = $request->user();
+        $user->two_factor_enabled = $validated['enabled'];
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $user->two_factor_enabled
+                ? 'Double authentification activée.'
+                : 'Double authentification désactivée.',
+            'data'    => $this->userResponse($user->fresh(), $request),
+        ]);
+    }
+
     private function sendVerificationCode(User $user): void
     {
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -584,7 +621,6 @@ class AuthController extends Controller
 
         $relative = '/'.ltrim($path, '/');
 
-        // Prefer the host that served the API (Docker :8080, Herd, etc.)
         if ($request) {
             return rtrim($request->getSchemeAndHttpHost(), '/').$relative;
         }
@@ -601,6 +637,7 @@ class AuthController extends Controller
             'role'       => $user->role ?? 'investor',
             'avatar'     => $user->avatar,
             'avatar_url' => $this->avatarUrl($user->avatar, $request),
+            'two_factor_enabled' => (bool) $user->two_factor_enabled,
             'created_at' => $user->created_at->toISOString(),
         ];
     }

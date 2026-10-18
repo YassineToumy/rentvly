@@ -54,7 +54,6 @@ async function handleRegister() {
 
 <template>
   <div class="min-h-screen bg-white dark:bg-slate-950 flex">
-    <!-- Visual column -->
     <div class="hidden lg:flex w-1/2 items-center justify-center bg-slate-900 border-r border-slate-800 relative overflow-hidden">
       <div class="absolute inset-0">
         <div class="absolute top-1/3 right-1/4 w-80 h-80 bg-primary-500/15 rounded-full blur-3xl" />
@@ -90,7 +89,6 @@ async function handleRegister() {
       </div>
     </div>
 
-    <!-- Form column -->
     <div class="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-10 py-10">
       <div class="w-full max-w-[420px]">
         <NuxtLink to="/" class="mb-14 flex justify-center">

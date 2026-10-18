@@ -9,15 +9,7 @@ use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\VenteController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::prefix('v1')->group(function () {
-
-    // ── Public ──
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
     Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->middleware('throttle:10,1');
     Route::post('/resend-verification-code', [AuthController::class, 'resendVerificationCode'])->middleware('throttle:5,1');
@@ -33,13 +25,13 @@ Route::prefix('v1')->group(function () {
     Route::post('/predict', [PredictionController::class, 'predict'])->middleware('throttle:20,1');
     Route::post('/rentability', [PredictionController::class, 'rentability'])->middleware('throttle:20,1');
 
-    // ── Protected (requires token) ──
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
         Route::patch('/me', [AuthController::class, 'updateProfile']);
         Route::patch('/me/email', [AuthController::class, 'updateEmail'])->middleware('throttle:10,1');
         Route::patch('/me/password', [AuthController::class, 'updatePassword'])->middleware('throttle:10,1');
+        Route::patch('/me/two-factor', [AuthController::class, 'updateTwoFactor']);
         Route::post('/me/avatar', [AuthController::class, 'updateAvatar']);
 
         Route::get('/estimations', [EstimationController::class, 'index']);
@@ -49,7 +41,6 @@ Route::prefix('v1')->group(function () {
         Route::patch('/estimations/{estimation}', [EstimationController::class, 'update']);
         Route::delete('/estimations/{estimation}', [EstimationController::class, 'destroy']);
 
-        // ── Admin ──
         Route::prefix('admin')->middleware('admin')->group(function () {
             Route::get('/stats', [AdminStatsController::class, 'index']);
 

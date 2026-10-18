@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Scraper Bien'ici — VENTES (achat)
 Adapté du scraper locations (bienici_scraper/scraper.py).
@@ -22,7 +20,7 @@ from pymongo.errors import DuplicateKeyError
 load_dotenv()
 
 MAX_RESULTS_WINDOW = 2400
-MIN_PRICE_SLICE = 1000  # € — tranches d'achat plus larges que les loyers
+MIN_PRICE_SLICE = 1000
 MAX_SUBDIVISION_DEPTH = 12
 
 
@@ -45,11 +43,8 @@ class BieniciVentesScraper:
         self.delay = int(os.getenv("DELAY_BETWEEN_REQUESTS", 2))
         self.max_pages = int(os.getenv("MAX_PAGES", 100))
         self.items_per_page = int(os.getenv("ITEMS_PER_PAGE", 100))
-        # Maisons uniquement — les appartements (flat) ont déjà été scrapés.
-        # PROPERTY_TYPES est ignoré volontairement pour éviter un re-scrape des flats.
         self.property_types = ["house"]
 
-        # Fourchettes de prix d'achat (seront subdivisées si nécessaire)
         self.initial_price_ranges = [
             (0, 50_000),
             (50_000, 100_000),

@@ -32,7 +32,6 @@ async function handleLogin() {
 
 <template>
   <div class="min-h-screen bg-white dark:bg-slate-950 flex">
-    <!-- Form column -->
     <div class="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-10 py-10">
       <div class="w-full max-w-[420px]">
         <NuxtLink to="/" class="mb-14 flex justify-center">

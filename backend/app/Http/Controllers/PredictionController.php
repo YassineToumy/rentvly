@@ -26,7 +26,6 @@ class PredictionController extends Controller
         try {
             $validated = $request->validated();
 
-            // Map frontend field names → model field names
             $payload = $this->mapFormToModel($validated);
 
             $response = Http::timeout(15)
@@ -50,7 +49,6 @@ class PredictionController extends Controller
                 $this->predictionServiceError($response->json(), $response->status()),
                 $response->status()
             );
-
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             return response()->json([
                 'success' => false,
@@ -98,7 +96,6 @@ class PredictionController extends Controller
                 $this->predictionServiceError($response->json(), $response->status()),
                 $response->status()
             );
-
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             return response()->json([
                 'success' => false,
@@ -136,13 +133,10 @@ class PredictionController extends Controller
     private function mapFormToModel(array $form): array
     {
         return [
-            // Location
             'city'                    => $form['city'] ?? '',
             'postalCode'              => $form['postal_code'] ?? '00000',
             'district_name'           => $form['district_name'] ?? '',
             'propertyType'            => $form['property_type'] ?? 'flat',
-
-            // Characteristics
             'surfaceArea'             => $form['surface_area'] ?? 30,
             'roomsQuantity'           => $form['rooms'] ?? 1,
             'bedroomsQuantity'        => $form['bedrooms'] ?? 0,
@@ -152,13 +146,9 @@ class PredictionController extends Controller
             'floor'                   => $form['floor'] ?? 0,
             'floorQuantity'           => $form['total_floors'] ?? 0,
             'landSurfaceArea'         => $form['land_surface'] ?? 0,
-
-            // State
             'yearOfConstruction'      => $form['year_built'] ?? 2000,
             'newProperty'             => $form['is_new'] ?? false,
             'isFurnished'             => $form['is_furnished'] ?? false,
-
-            // Equipment
             'hasCellar'               => $form['has_cellar'] ?? false,
             'hasBalcony'              => $form['has_balcony'] ?? false,
             'hasTerrace'              => $form['has_terrace'] ?? false,
@@ -169,18 +159,12 @@ class PredictionController extends Controller
             'hasAirConditioning'      => $form['has_air_conditioning'] ?? false,
             'hasFireplace'            => $form['has_fireplace'] ?? false,
             'hasSeparateToilet'       => $form['has_separate_toilet'] ?? false,
-
-            // Energy
             'energyClassification'    => $form['energy_class'] ?? 'D',
             'energyValue'             => $form['energy_value'] ?? 0,
             'greenhouseGazValue'      => $form['greenhouse_value'] ?? 0,
             'heating_type_normalized' => $form['heating_type'] ?? 'individual',
-
-            // Parking
             'parkingPlacesQuantity'   => $form['parking_places'] ?? 0,
             'garagesQuantity'         => $form['garages'] ?? 0,
-
-            // Charges
             'charges'                 => $form['charges'] ?? 0,
         ];
     }

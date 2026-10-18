@@ -58,7 +58,6 @@ async function fetchProperty() {
     const res = await $fetch<any>(`${apiBase}/ventes/${id}`)
     if (res.success) {
       property.value = res.data
-      // Pre-fill purchase price from property price
       purchasePrice.value = res.data.price || null
     }
   } catch (e: any) {
@@ -97,7 +96,6 @@ function mapPropertyToForm(p: any) {
   form.heating_type = p.heating_type || 'individual'
   form.charges = p.charges || 0
 
-  // Equipment from JSONB feature columns
   form.has_elevator = allFeatures.has_elevator || false
   form.has_garden = allFeatures.has_garden || false
   form.has_terrace = allFeatures.has_terrace || false
@@ -294,12 +292,10 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
 
 <template>
   <div class="min-h-screen">
-    <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-32">
       <UIcon name="i-lucide-loader-2" class="size-8 text-gray-600 dark:text-gray-400 animate-spin" />
     </div>
 
-    <!-- Error -->
     <div v-else-if="error" class="max-w-3xl mx-auto px-4 py-20 text-center">
       <UIcon name="i-lucide-alert-circle" class="size-12 text-red-400 mx-auto mb-4" />
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Erreur</h2>
@@ -307,9 +303,7 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
       <UButton to="/listings" variant="outline" color="neutral" icon="i-lucide-arrow-left">Retour aux annonces</UButton>
     </div>
 
-    <!-- Detail -->
     <div v-else-if="property">
-      <!-- Back bar -->
       <div class="border-b border-gray-300/80 dark:border-gray-800 bg-[#f4f5f7] dark:bg-gray-950 shadow-[0_2px_10px_rgba(15,23,42,0.06)] dark:shadow-none">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4">
           <UButton to="/listings" variant="ghost" color="neutral" icon="i-lucide-arrow-left" size="sm">Retour aux annonces</UButton>
@@ -319,10 +313,8 @@ function getFeatures(p: any): { label: string; active: boolean }[] {
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          <!-- LEFT -->
           <div class="lg:col-span-2 space-y-6">
 
-            <!-- Gallery -->
             <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900">
               <div class="relative h-72 sm:h-96">
                 <button

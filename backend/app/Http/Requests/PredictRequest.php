@@ -14,16 +14,11 @@ class PredictRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Location
             'city'                  => 'required|string|max:255',
             'postal_code'           => 'required|string|size:5',
             'department'            => 'nullable|string|max:3',
             'district_name'         => 'nullable|string|max:255',
-
-            // Type
             'property_type'         => 'required|in:flat,house',
-
-            // Characteristics
             'surface_area'          => 'required|numeric|min:9|max:500',
             'rooms'                 => 'required|integer|min:1|max:20',
             'bedrooms'              => 'nullable|integer|min:0|max:20',
@@ -33,13 +28,9 @@ class PredictRequest extends FormRequest
             'floor'                 => 'nullable|integer|min:0|max:50',
             'total_floors'          => 'nullable|integer|min:0|max:50',
             'land_surface'          => 'nullable|numeric|min:0',
-
-            // State
             'year_built'            => 'nullable|integer|min:1800|max:2026',
             'is_new'                => 'nullable|boolean',
             'is_furnished'          => 'nullable|boolean',
-
-            // Equipment
             'has_cellar'            => 'nullable|boolean',
             'has_balcony'           => 'nullable|boolean',
             'has_terrace'           => 'nullable|boolean',
@@ -50,18 +41,12 @@ class PredictRequest extends FormRequest
             'has_air_conditioning'  => 'nullable|boolean',
             'has_fireplace'         => 'nullable|boolean',
             'has_separate_toilet'   => 'nullable|boolean',
-
-            // Energy
             'energy_class'          => 'nullable|in:A,B,C,D,E,F,G',
             'energy_value'          => 'nullable|numeric|min:0',
             'greenhouse_value'      => 'nullable|numeric|min:0',
             'heating_type'          => 'nullable|in:individual,collective,other',
-
-            // Parking
             'parking_places'        => 'nullable|integer|min:0',
             'garages'               => 'nullable|integer|min:0',
-
-            // Charges
             'charges'               => 'nullable|numeric|min:0',
         ];
     }

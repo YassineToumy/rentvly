@@ -15,28 +15,23 @@ return new class extends Migration
             $t->string('title');
             $t->text('description')->nullable();
 
-            // Type
             $t->string('property_type');
             $t->boolean('is_new_property')->default(false);
 
-            // Price
             $t->integer('price');
             $t->decimal('price_per_sqm', 10, 2)->nullable();
             $t->boolean('price_has_decreased')->default(false);
             $t->boolean('reduced_vat')->default(false);
 
-            // Characteristics
             $t->decimal('surface_area', 8, 2)->nullable();
             $t->integer('rooms_quantity')->nullable();
             $t->decimal('surface_per_room', 8, 2)->nullable();
 
-            // Features (JSONB)
             $t->jsonb('interior_features')->nullable();
             $t->jsonb('exterior_features')->nullable();
             $t->jsonb('other_features')->nullable();
             $t->integer('equipment_score')->default(0);
 
-            // Location
             $t->string('city');
             $t->string('postal_code', 5);
             $t->string('department_code', 3);
@@ -45,16 +40,13 @@ return new class extends Migration
             $t->decimal('latitude', 10, 7)->nullable();
             $t->decimal('longitude', 10, 7)->nullable();
 
-            // Owner
             $t->string('owner_type')->nullable();
             $t->string('owner_name')->nullable();
             $t->boolean('is_pro')->default(false);
 
-            // Media
             $t->jsonb('photos')->nullable();
             $t->integer('photos_count')->default(0);
 
-            // Dates
             $t->timestamp('publication_date')->nullable();
             $t->timestamp('modification_date')->nullable();
             $t->date('delivery_date')->nullable();
@@ -62,7 +54,6 @@ return new class extends Migration
             $t->timestamp('cleaned_at')->nullable();
             $t->timestamps();
 
-            // Indexes
             $t->index('city');
             $t->index('postal_code');
             $t->index('department_code');

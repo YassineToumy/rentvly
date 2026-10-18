@@ -15,8 +15,6 @@ class RentabilityRequest extends FormRequest
     {
         return [
             'purchase_price'                    => 'required|numeric|min:1000',
-
-            // Nested property fields (same as PredictRequest)
             'property.city'                     => 'required|string|max:255',
             'property.postal_code'              => 'required|string|size:5',
             'property.department'               => 'nullable|string|max:3',

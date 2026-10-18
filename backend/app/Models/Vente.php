@@ -44,8 +44,6 @@ class Vente extends Model
         'cleaned_at'          => 'datetime',
     ];
 
-    // ── Relationships ──
-
     public function commune(): BelongsTo
     {
         return $this->belongsTo(Commune::class, 'code_commune', 'code_commune');
@@ -60,8 +58,6 @@ class Vente extends Model
     {
         return $this->belongsTo(Region::class, 'code_region', 'code_region');
     }
-
-    // ── Scopes ──
 
     public function scopeInCity($q, string $city)
     {

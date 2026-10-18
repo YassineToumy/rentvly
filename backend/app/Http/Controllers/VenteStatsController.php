@@ -110,12 +110,11 @@ class VenteStatsController extends Controller
 
     private function filteredQuery(Request $request): Builder
     {
-        // Always qualify ventes.* — joins (departements, regions) also expose code_region.
         return Vente::query()
             ->when($request->input('type'), fn ($q, $t) => $q->where('ventes.property_type', $t))
             ->when($request->filled('region'), function ($q) use ($request) {
                 $region = (string) $request->input('region');
-                // Prefer ventes.code_region; fallback via department when code_region is null.
+
                 $q->where(function ($inner) use ($region) {
                     $inner->where('ventes.code_region', $region)
                         ->orWhereIn('ventes.department_code', function ($sub) use ($region) {

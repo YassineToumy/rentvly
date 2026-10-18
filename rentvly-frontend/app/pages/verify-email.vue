@@ -7,6 +7,7 @@ const route = useRoute()
 const { verifyEmail, resendVerificationCode, loading, error } = useAuth()
 
 const email = ref<string>(typeof route.query.email === 'string' ? route.query.email : '')
+const is2fa = computed(() => route.query.reason === '2fa')
 const code = ref('')
 const resendOk = ref(false)
 const resendCooldown = ref(0)
@@ -47,9 +48,13 @@ async function handleResend() {
         <div class="w-16 h-16 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center mx-auto mb-5">
           <UIcon name="i-lucide-mail-check" class="size-8 text-emerald-800 dark:text-primary-400" />
         </div>
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Vérifiez votre e-mail</h1>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+          {{ is2fa ? 'Vérification en deux étapes' : 'Vérifiez votre e-mail' }}
+        </h1>
         <p class="mt-2 text-sm text-slate-500">
-          Nous avons envoyé un code à 6 chiffres à
+          {{ is2fa
+            ? 'Pour sécuriser votre connexion, saisissez le code à 6 chiffres envoyé à'
+            : 'Nous avons envoyé un code à 6 chiffres à' }}
           <span class="font-medium text-slate-700 dark:text-slate-300">{{ email || 'votre adresse' }}</span>.
         </p>
       </div>
@@ -103,7 +108,7 @@ async function handleResend() {
           :disabled="code.length !== 6 || !email"
           class="w-full h-11 shadow-lg shadow-primary-500/20"
         >
-          Vérifier mon compte
+          {{ is2fa ? 'Se connecter' : 'Vérifier mon compte' }}
         </UButton>
       </form>
 

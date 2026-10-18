@@ -21,7 +21,6 @@ const purchasePrice = ref<number | null>(null)
 const showResults = ref(false)
 const saveSuccess = ref(false)
 
-// Steps for the form
 const currentStep = ref(0)
 const steps = [
   { label: 'Localisation', icon: 'i-lucide-map-pin' },
@@ -30,7 +29,6 @@ const steps = [
   { label: 'Énergie', icon: 'i-lucide-zap' },
 ]
 
-// Select options
 const propertyTypes = [
   { label: 'Appartement', value: 'flat' },
   { label: 'Maison', value: 'house' },
@@ -52,10 +50,8 @@ const heatingTypes = [
   { label: 'Autre', value: 'other' },
 ]
 
-// Auto-derive department from postal code
 watch(() => form.postal_code, (val) => {
   if (val && val.length >= 2) {
-    // Department derivation removed - add 'department' property to usePrediction composable if needed
   }
 })
 
@@ -170,7 +166,6 @@ function getYieldColor(yieldPct: number): string {
 
 <template>
   <div class="min-h-screen bg-[#e8eaed] dark:bg-gray-950">
-    <!-- Header -->
     <div class="bg-[#f4f5f7] dark:bg-gray-900 border-b border-gray-300/80 dark:border-gray-800 shadow-[0_2px_10px_rgba(15,23,42,0.06)] dark:shadow-none">
       <div class="max-w-5xl mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-gray-950 dark:text-white">
@@ -192,12 +187,8 @@ function getYieldColor(yieldPct: number): string {
     <div class="max-w-5xl mx-auto px-4 py-8">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <!-- ══════════════════════════════════════════ -->
-        <!-- LEFT: FORM -->
-        <!-- ══════════════════════════════════════════ -->
         <div class="lg:col-span-2">
           <UCard class="shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none ring-1 ring-gray-300/80 dark:ring-gray-800">
-            <!-- Steps indicator -->
             <div class="flex items-center justify-between mb-8">
               <button
                 v-for="(step, i) in steps"
@@ -214,7 +205,6 @@ function getYieldColor(yieldPct: number): string {
               </button>
             </div>
 
-            <!-- Step 0: Localisation -->
             <div v-show="currentStep === 0" class="space-y-5">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <UFormField label="Ville" required>
@@ -235,7 +225,6 @@ function getYieldColor(yieldPct: number): string {
               </UFormField>
             </div>
 
-            <!-- Step 1: Caractéristiques -->
             <div v-show="currentStep === 1" class="space-y-5">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <UFormField label="Surface habitable (m²)" required>
@@ -291,7 +280,6 @@ function getYieldColor(yieldPct: number): string {
               </div>
             </div>
 
-            <!-- Step 2: Équipements -->
             <div v-show="currentStep === 2" class="space-y-6">
               <div>
                 <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Extérieur</h3>
@@ -332,7 +320,6 @@ function getYieldColor(yieldPct: number): string {
               </div>
             </div>
 
-            <!-- Step 3: Énergie -->
             <div v-show="currentStep === 3" class="space-y-5">
               <UFormField label="Classe énergétique (DPE)">
                 <USelect v-model="form.energy_class" :items="energyClasses" value-key="value" />
@@ -353,7 +340,6 @@ function getYieldColor(yieldPct: number): string {
               </UFormField>
             </div>
 
-            <!-- Navigation buttons -->
             <div class="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
               <UButton
                 v-if="currentStep > 0"
@@ -389,12 +375,8 @@ function getYieldColor(yieldPct: number): string {
           </UCard>
         </div>
 
-        <!-- ══════════════════════════════════════════ -->
-        <!-- RIGHT: RESULTS -->
-        <!-- ══════════════════════════════════════════ -->
         <div class="space-y-6">
 
-          <!-- Error -->
           <UAlert
             v-if="error"
             color="error"
@@ -403,7 +385,6 @@ function getYieldColor(yieldPct: number): string {
             :description="error"
           />
 
-          <!-- Prediction result -->
           <UCard
             v-if="predictionResult"
             class="shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none ring-1 ring-gray-300/80 dark:ring-gray-800"
@@ -439,7 +420,6 @@ function getYieldColor(yieldPct: number): string {
             </div>
           </UCard>
 
-          <!-- Waiting state -->
           <UCard
             v-if="!predictionResult && !error"
             class="shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none ring-1 ring-gray-300/80 dark:ring-gray-800"
@@ -452,7 +432,6 @@ function getYieldColor(yieldPct: number): string {
             </div>
           </UCard>
 
-          <!-- Rentability calculator -->
           <UCard
             v-if="predictionResult"
             class="shadow-[0_4px_16px_rgba(15,23,42,0.1)] dark:shadow-none ring-1 ring-gray-300/80 dark:ring-gray-800"

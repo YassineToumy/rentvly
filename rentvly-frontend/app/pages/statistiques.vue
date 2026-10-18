@@ -59,8 +59,6 @@ type StatsPayload = {
 
 const selectedType = ref('')
 const selectedRegion = ref('')
-const selectedDepartment = ref('')
-const selectedCity = ref('')
 const selectedPrice = ref('')
 const selectedSurface = ref('')
 
@@ -85,8 +83,6 @@ const surfaceItems = [
 ]
 
 const regionItems = computed(() => stats.value?.filter_options.regions || [])
-const departmentItems = computed(() => stats.value?.filter_options.departments || [])
-const cityItems = computed(() => stats.value?.filter_options.cities || [])
 
 function priceParams() {
   if (selectedPrice.value === 'under150') return { max_price: '150000' }
@@ -113,8 +109,6 @@ async function fetchStats() {
     }
     if (selectedType.value) query.type = selectedType.value
     if (selectedRegion.value) query.region = selectedRegion.value
-    if (selectedDepartment.value) query.department = selectedDepartment.value
-    if (selectedCity.value) query.city = selectedCity.value
 
     const res = await $fetch<{ success: boolean; data: StatsPayload }>(`${apiBase}/ventes/stats`, { query })
     if (res.success) stats.value = res.data
@@ -131,16 +125,8 @@ function scheduleFetch() {
   fetchTimer = setTimeout(fetchStats, 120)
 }
 
-watch(selectedRegion, () => {
-  selectedDepartment.value = ''
-  selectedCity.value = ''
-})
-watch(selectedDepartment, () => {
-  selectedCity.value = ''
-})
-
 watch(
-  [selectedType, selectedRegion, selectedDepartment, selectedCity, selectedPrice, selectedSurface],
+  [selectedType, selectedRegion, selectedPrice, selectedSurface],
   scheduleFetch,
 )
 
@@ -151,8 +137,6 @@ onMounted(() => {
 function resetFilters() {
   selectedType.value = ''
   selectedRegion.value = ''
-  selectedDepartment.value = ''
-  selectedCity.value = ''
   selectedPrice.value = ''
   selectedSurface.value = ''
 }
@@ -239,7 +223,7 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsFilterSelect
             v-model="selectedType"
             label="Type"
@@ -251,18 +235,6 @@ const maxType = computed(() => Math.max(...(stats.value?.by_type.map(t => t.list
             label="Région"
             placeholder="Toute la France"
             :items="regionItems"
-          />
-          <StatsFilterSelect
-            v-model="selectedDepartment"
-            label="Département"
-            placeholder="Tous les départements"
-            :items="departmentItems"
-          />
-          <StatsFilterSelect
-            v-model="selectedCity"
-            label="Ville"
-            placeholder="Toutes les villes"
-            :items="cityItems"
           />
           <StatsFilterSelect
             v-model="selectedPrice"

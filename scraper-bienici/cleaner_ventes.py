@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Cleaner ventes — lit `bienici.vente`, écrit `bienici.ventes_clean`
 au format attendu par `php artisan import:ventes` (snake_case).
@@ -18,7 +16,6 @@ SOURCE_COLLECTION = os.getenv("MONGO_VENTES_COLLECTION", "vente")
 CLEAN_COLLECTION = os.getenv("MONGO_VENTES_CLEAN_COLLECTION", "ventes_clean")
 BATCH_SIZE = 500
 
-# Seuils achat (€ et m²)
 MIN_PRICE = 30_000
 MAX_PRICE = 20_000_000
 MIN_SURFACE = 9

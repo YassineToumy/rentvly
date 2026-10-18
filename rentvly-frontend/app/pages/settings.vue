@@ -6,7 +6,7 @@ useHead({ title: 'Paramètres — Rentvly' })
 const colorMode = useColorMode()
 const toast = useToast()
 const apiBase = useApiBase()
-const { user, authHeaders, fetchUser } = useAuth()
+const { user, authHeaders, fetchUser, updateTwoFactor, apiErrorMessage } = useAuth()
 
 const themeOptions = [
   { value: 'light', label: 'Clair', icon: 'i-lucide-sun', description: 'Fond doux, cartes avec ombre' },
@@ -31,7 +31,6 @@ watch(user, (u) => {
   email.value = u.email || ''
 })
 
-// ── Profile (name / email) ──
 const name = ref('')
 const email = ref('')
 const profileLoading = ref(false)
@@ -62,7 +61,6 @@ async function saveProfile() {
   }
 }
 
-// ── Password ──
 const currentPassword = ref('')
 const newPassword = ref('')
 const newPasswordConfirmation = ref('')
@@ -105,7 +103,6 @@ async function savePassword() {
   }
 }
 
-// ── Avatar ──
 const avatarInput = ref<HTMLInputElement | null>(null)
 const avatarLoading = ref(false)
 const avatarPreview = ref<string | null>(null)
@@ -171,6 +168,30 @@ function normalizeAvatar(data: any) {
   }
   return data
 }
+
+const twoFactorEnabled = computed(() => !!user.value?.two_factor_enabled)
+const twoFactorLoading = ref(false)
+
+async function toggleTwoFactor(enabled: boolean) {
+  if (twoFactorLoading.value) return
+  twoFactorLoading.value = true
+  try {
+    const res = await updateTwoFactor(enabled)
+    if (res.success) {
+      toast.add({
+        title: res.message || (enabled ? 'Double authentification activée.' : 'Double authentification désactivée.'),
+        color: 'success',
+      })
+    }
+  } catch (e: any) {
+    toast.add({
+      title: apiErrorMessage(e, 'Impossible de mettre à jour la double authentification.'),
+      color: 'error',
+    })
+  } finally {
+    twoFactorLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -194,7 +215,6 @@ function normalizeAvatar(data: any) {
     </div>
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <!-- Photo -->
       <section class="app-card p-6">
         <div class="flex items-start gap-3 mb-6">
           <div class="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center flex-shrink-0">
@@ -252,7 +272,6 @@ function normalizeAvatar(data: any) {
         </div>
       </section>
 
-      <!-- Nom / Email -->
       <section class="app-card p-6">
         <div class="flex items-start gap-3 mb-6">
           <div class="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center flex-shrink-0">
@@ -296,7 +315,6 @@ function normalizeAvatar(data: any) {
         </form>
       </section>
 
-      <!-- Password -->
       <section class="app-card p-6">
         <div class="flex items-start gap-3 mb-6">
           <div class="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center flex-shrink-0">
@@ -368,7 +386,42 @@ function normalizeAvatar(data: any) {
         </form>
       </section>
 
-      <!-- Theme -->
+      <section class="app-card p-6">
+        <div class="flex items-start gap-3 mb-6">
+          <div class="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center flex-shrink-0">
+            <UIcon name="i-lucide-shield-check" class="size-5 text-emerald-800 dark:text-primary-400" />
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold app-heading">
+              Double authentification (2FA)
+            </h2>
+            <p class="text-sm app-muted mt-0.5">
+              Recevez un code par e-mail à chaque connexion pour sécuriser votre compte.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-4 rounded-xl app-border border p-4">
+          <div class="min-w-0">
+            <p class="font-medium app-heading">
+              Vérification par e-mail à la connexion
+            </p>
+            <p class="text-sm app-muted mt-0.5">
+              {{ twoFactorEnabled
+                ? 'Activée — un code vous sera demandé à chaque connexion.'
+                : 'Désactivée — vous vous connectez avec votre mot de passe uniquement.' }}
+            </p>
+          </div>
+          <USwitch
+            :model-value="twoFactorEnabled"
+            :loading="twoFactorLoading"
+            :disabled="twoFactorLoading"
+            size="lg"
+            @update:model-value="toggleTwoFactor"
+          />
+        </div>
+      </section>
+
       <section class="app-card p-6">
         <div class="flex items-start gap-3 mb-6">
           <div class="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center flex-shrink-0">

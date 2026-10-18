@@ -1,7 +1,4 @@
 <?php
-// ============================================================
-// 2026_02_24_000001_create_communes_table.php
-// ============================================================
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -26,4 +23,3 @@ return new class extends Migration {
     }
     public function down(): void { Schema::dropIfExists('communes'); }
 };
-

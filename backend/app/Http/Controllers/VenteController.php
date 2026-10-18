@@ -15,12 +15,10 @@ class VenteController extends Controller
     {
         $query = Vente::with(['departement', 'region']);
 
-        // Type filter
         if ($type = $request->input('type')) {
             $query->where('property_type', $type);
         }
 
-        // City / postal code search
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('city', 'ilike', "%{$search}%")
@@ -28,7 +26,6 @@ class VenteController extends Controller
             });
         }
 
-        // Price range
         if ($min = $request->input('min_price')) {
             $query->where('price', '>=', (int) $min);
         }
@@ -36,7 +33,6 @@ class VenteController extends Controller
             $query->where('price', '<=', (int) $max);
         }
 
-        // Surface
         if ($minS = $request->input('min_surface')) {
             $query->where('surface_area', '>=', (float) $minS);
         }
@@ -44,22 +40,18 @@ class VenteController extends Controller
             $query->where('surface_area', '<=', (float) $maxS);
         }
 
-        // Rooms
         if ($rooms = $request->input('rooms')) {
             $query->where('rooms_quantity', (int) $rooms);
         }
 
-        // Department
         if ($dept = $request->input('department')) {
             $query->where('department_code', $dept);
         }
 
-        // New property only
         if ($request->boolean('is_new')) {
             $query->where('is_new_property', true);
         }
 
-        // JSONB feature filters
         if ($request->boolean('has_garden')) {
             $query->whereJsonContains('exterior_features->has_garden', true);
         }
@@ -73,7 +65,6 @@ class VenteController extends Controller
             $query->whereJsonContains('other_features->has_parking', true);
         }
 
-        // Sort
         match ($request->input('sort', 'recent')) {
             'price-asc'  => $query->orderBy('price', 'asc'),
             'price-desc' => $query->orderBy('price', 'desc'),
@@ -81,7 +72,6 @@ class VenteController extends Controller
             default      => $query->orderBy('publication_date', 'desc'),
         };
 
-        // Paginate
         $perPage = min((int) $request->input('per_page', 12), 50);
         $results = $query->paginate($perPage);
 

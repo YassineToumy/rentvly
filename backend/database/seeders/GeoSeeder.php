@@ -39,7 +39,6 @@ class GeoSeeder extends Seeder
         unset($r);
         DB::table('regions')->upsert($regions, ['code_region'], ['nom', 'updated_at']);
 
-        // code_departement => [nom, code_region]
         $departements = [
             '01' => ['Ain', '84'], '02' => ['Aisne', '32'], '03' => ['Allier', '84'],
             '04' => ['Alpes-de-Haute-Provence', '93'], '05' => ['Hautes-Alpes', '93'],

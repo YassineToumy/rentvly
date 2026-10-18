@@ -10,7 +10,7 @@ class AncienneRegion extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
-    public $timestamps = false; // only has created_at
+    public $timestamps = false;  
 
     protected $fillable = ['code_ancienne_region', 'nom', 'code_region'];
 

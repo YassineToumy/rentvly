@@ -1,13 +1,10 @@
-// composables/usePrediction.ts
 
 export interface PropertyForm {
-  // Location
   city: string
   postal_code: string
   district_name: string
   property_type: 'flat' | 'house'
 
-  // Characteristics
   surface_area: number | null
   rooms: number
   bedrooms: number
@@ -18,12 +15,10 @@ export interface PropertyForm {
   total_floors: number
   land_surface: number
 
-  // State
   year_built: number
   is_new: boolean
   is_furnished: boolean
 
-  // Equipment
   has_cellar: boolean
   has_balcony: boolean
   has_terrace: boolean
@@ -35,17 +30,14 @@ export interface PropertyForm {
   has_fireplace: boolean
   has_separate_toilet: boolean
 
-  // Energy
   energy_class: string
   energy_value: number
   greenhouse_value: number
   heating_type: string
 
-  // Parking
   parking_places: number
   garages: number
 
-  // Charges
   charges: number
 }
 
